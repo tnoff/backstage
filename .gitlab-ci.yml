@@ -1,0 +1,120 @@
+include:
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/tag.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/renovate.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/branch-cleanup.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/trufflehog.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/trufflehog-image.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/bump-version.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/assemble-changelog.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/buildkit-build-check.yml'
+  - project: 'tnoff-projects/github-workflows'
+    ref: 5dbcb394d4ab09c9137b021dc3dde2563b5fd94c
+    file: '/gitlab/buildkit-docker-push.yml'
+
+default:
+  # Ride out ci-pool cold-starts / node churn. These `when:` classes are
+  # infra-side failures, never `script_failure`, so a failing build is never
+  # silently retried. GitLab caps retry:max at 2 (= 3 total attempts).
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - scheduler_failure
+  tags:
+    - self-hosted
+
+# Canonical trigger-prefixed stages (CI consolidation, docs!59).
+# No `test` stage yet — wiring `yarn test` needs a Node CI image and is
+# tracked as follow-up, not shipped half-done here.
+stages:
+  - pr-check
+  - push
+  - renovate
+
+# Pre-merge image build. Backstage compiles the whole monorepo in the image, so
+# anything that feeds the build invalidates it — not just the Dockerfile.
+.image-build-rules:
+  rules:
+    # Fork MRs require a project member to manually trigger jobs — prevents untrusted code from running CI automatically
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID != $CI_PROJECT_ID
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - Dockerfile
+        - package.json
+        - yarn.lock
+        - .yarnrc.yml
+        - tsconfig.json
+        - app-config*.yaml
+        - packages/**/*
+        - plugins/**/*
+
+bump-version:
+  extends: .bump-version
+  variables:
+    GITLAB_PUSH_TOKEN: $RENOVATE_TOKEN
+    BUMP_CHANGELOG: 'true'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate\/dev-/
+
+# Heavy-repo guard: the assemble-changelog fold pushes a "docs: assemble
+# changelog for X" commit to main, which fires a follow-up pipeline. That commit
+# is byte-identical in the image context, so re-running push:image would skip the
+# tag write (shared digest) and any downstream pin would reference a tag that was
+# never written.
+.not-on-changelog-fold:
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /^docs: assemble changelog/'
+      when: never
+
+"assemble-changelog":
+  extends: .assemble-changelog
+  stage: .pre
+  variables:
+    GITLAB_PUSH_TOKEN: $RENOVATE_TOKEN
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+
+"pr-check:build":
+  extends: .buildkit-build-check
+  stage: pr-check
+  rules: !reference [.image-build-rules, rules]
+
+"push:image":
+  extends: .buildkit-docker-push
+  stage: push
+  rules:
+    - !reference [.not-on-changelog-fold, rules]
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: on_success
+
+# NOTE: no trigger-bump-docker-apps job yet. .trigger-bump rewrites an image pin
+# in docker-apps, and the backstage/ Flux tree does not exist there yet — firing
+# it now would bump a file that isn't in the repo. It gets added in the same MR
+# that creates the tree, so the image exists before anything pins it.
+
+"pr-check:secrets":
+  extends: .trufflehog
+  stage: pr-check
+  rules:
+    # Fork MRs require a project member to manually trigger jobs — prevents untrusted code from running CI automatically
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID != $CI_PROJECT_ID
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
