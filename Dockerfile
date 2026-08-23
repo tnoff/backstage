@@ -27,6 +27,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends python3 g++ build-essential libsqlite3-dev
 
+# Pre-create the yarn state dir as `node`. The cache mount below targets
+# .../berry/cache, and Docker creates the missing parents (.../berry) as root —
+# so yarn, running as `node`, then cannot mkdir its sibling .../berry/index and
+# dies with EACCES. Owning the whole tree up front avoids that.
+RUN mkdir -p /home/node/.yarn/berry/cache && chown -R node:node /home/node/.yarn
+
 USER node
 WORKDIR /app
 COPY --from=packages --chown=node:node /app .
@@ -49,6 +55,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends libsqlite3-dev && \
     rm -rf /var/lib/apt/lists/*
+
+# Same ownership fix as the build stage — this stage mounts the same cache.
+RUN mkdir -p /home/node/.yarn/berry/cache && chown -R node:node /home/node/.yarn
 
 USER node
 WORKDIR /app
