@@ -75,13 +75,30 @@ RUN mkdir -p packages/backend/dist/skeleton packages/backend/dist/bundle && \
     tar xzf packages/backend/dist/skeleton.tar.gz -C packages/backend/dist/skeleton && \
     tar xzf packages/backend/dist/bundle.tar.gz -C packages/backend/dist/bundle
 
-# Stage 3 — runtime: production dependencies only.
-FROM node:24-trixie-slim
+# Stage 3 — prod-deps: production dependencies, resolved where a toolchain exists.
+#
+# `yarn workspaces focus --all --production` compiles native modules when no
+# prebuilt binary matches the platform. On arm64 no prebuilds are published for
+# better-sqlite3, keytar or cpu-features, so yarn falls back to node-gyp, which
+# needs python3 + g++ + make. The runtime base has none of them:
+#
+#   $ docker run --rm node:24-trixie-slim sh -c 'command -v python3 g++ make cc'
+#   python3 MISSING / g++ MISSING / make MISSING / cc MISSING
+#
+# This is INVISIBLE ON amd64. There, prebuilds exist and nothing is ever
+# compiled — a local `docker build` passes clean while CI fails, which is
+# exactly what happened: zero "must be built" lines locally, three
+# "couldn't be built successfully" on arm64.
+#
+# The build stage above already compiles these same modules on arm64 with this
+# toolchain, so installing it here is known-sufficient rather than hopeful.
+# Keeping the install in its own stage means the compiler never reaches the
+# shipped image.
+FROM node:24-trixie-slim AS prod-deps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
-    apt-get install -y --no-install-recommends libsqlite3-dev && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends python3 g++ build-essential libsqlite3-dev
 
 # Same ownership fix as the build stage — this stage mounts the same cache.
 RUN mkdir -p /home/node/.yarn/berry/cache && chown -R node:node /home/node/.yarn
@@ -97,6 +114,20 @@ COPY --from=build --chown=node:node /app/packages/backend/dist/skeleton/ ./
 RUN --mount=type=cache,target=/home/node/.yarn/berry/cache,sharing=locked,uid=1000,gid=1000 \
     yarn workspaces focus --all --production
 
+# Stage 4 — runtime: the compiled result, without the compiler.
+FROM node:24-trixie-slim
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends libsqlite3-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+USER node
+WORKDIR /app
+
+# /app from prod-deps carries node_modules, .yarn, .yarnrc.yml, the lockfile
+# and the backend skeleton — everything the focus install produced.
+COPY --from=prod-deps --chown=node:node /app ./
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
 COPY --chown=node:node app-config*.yaml ./
 
