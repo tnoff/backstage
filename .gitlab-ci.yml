@@ -92,9 +92,36 @@ bump-version:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
 
+# Take LESS CPU than the runner default, on purpose.
+#
+# cpu_limit defaults to 750m, and it is enforced — buildkit places its runc
+# workers in a CHILD cgroup of the build container, so the container's cpu.max
+# binds. On a 1-OCPU ci node (840m allocatable) 750m is 89% of the node, leaving
+# roughly 250m of its 1000m for kubelet, CRI-O and the DaemonSets.
+#
+# That is not enough under this build. Kubelet housekeeping stretched to 10.4s
+# against a 1s expectation, an OKE health-monitor timed out its 10s healthz
+# curl, logged `Kubelet is unhealthy!` and restarted the kubelet — taking CRI-O
+# with it via a 1-minute systemd watchdog. The node went Ready=Unknown and the
+# taint manager deleted this pod 300s later. Seven builds died that way.
+#
+# 500m leaves ~500m for the rest of the node instead of ~250m. It costs
+# wall-clock on the CPU-bound phases (`yarn tsc`, the app build, and the
+# production install), which is what the raised timeout below is for.
+#
+# Requires cpu_limit_overwrite_max_allowed on the runner (docker-apps!1323).
+# See docs projects/ci-builds-starve-kubelet.md.
 "pr-check:build":
   extends: .buildkit-build-check
   stage: pr-check
+  # At 750m this job ran ~2400s. At 500m the CPU-bound phases stretch roughly
+  # 1.5x, which lands near the default 1h and would start failing on
+  # job_execution_timeout instead of finishing. FF_USE_POD_ACTIVE_DEADLINE_SECONDS
+  # ties the pod's activeDeadlineSeconds to this value, so it must cover the
+  # slower build too.
+  timeout: 2h
+  variables:
+    KUBERNETES_CPU_LIMIT: 500m
   rules: !reference [.image-build-rules, rules]
 
 "push:image":
