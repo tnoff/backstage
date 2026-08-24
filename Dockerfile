@@ -42,9 +42,36 @@ RUN --mount=type=cache,target=/home/node/.yarn/berry/cache,sharing=locked,uid=10
 
 COPY --chown=node:node . .
 
-RUN yarn tsc && \
-    yarn build:backend && \
-    mkdir -p packages/backend/dist/skeleton packages/backend/dist/bundle && \
+# Split into one RUN per phase, deliberately.
+#
+# These were a single chained RUN, which buildkit reports as ONE `DONE <n>s`
+# line. That line was 668s on one CI run and 1194s on another, with no way to
+# tell which phase owned the time. Measured cold on a 12-core x86 workstation
+# the same three phases total ~10s:
+#
+#   yarn tsc                          3.0s
+#   yarn workspace app build          4.5s   (460% CPU, peak RSS 1.70 GiB)
+#   yarn workspace backend build      2.4s
+#
+# 0.75 of a core and arm64 do not explain a 70-120x gap, so the cost is
+# somewhere these timings do not show. One RUN per phase makes buildkit print
+# a separate DONE line for each, and those stream to the job log as they
+# complete — so the breakdown survives even when the job is killed partway,
+# which is currently how it ends. See docs projects/ci-builds-starve-kubelet.md.
+#
+# `--skip-build-dependencies` stops the backend build from rebuilding the app.
+# `backend` depends on `app` via `link:../app`, so `yarn build:backend` walks
+# into the frontend and rebuilds it ("Building app separately because it is a
+# bundled package"). The flag skips the rebuild and still packages the app's
+# existing dist: verified locally, the resulting bundle.tar.gz carries all 771
+# packages/app/dist files including index.html and the static chunks.
+RUN yarn tsc
+
+RUN yarn workspace app build
+
+RUN yarn workspace backend build --skip-build-dependencies
+
+RUN mkdir -p packages/backend/dist/skeleton packages/backend/dist/bundle && \
     tar xzf packages/backend/dist/skeleton.tar.gz -C packages/backend/dist/skeleton && \
     tar xzf packages/backend/dist/bundle.tar.gz -C packages/backend/dist/bundle
 
