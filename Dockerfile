@@ -114,6 +114,30 @@ COPY --from=build --chown=node:node /app/packages/backend/dist/skeleton/ ./
 RUN --mount=type=cache,target=/home/node/.yarn/berry/cache,sharing=locked,uid=1000,gid=1000 \
     yarn workspaces focus --all --production
 
+# Drop ssh2's test fixtures before they reach the runtime stage.
+#
+# ssh2 ships test/fixtures/id_rsa, a PUBLIC dummy key that every install of the
+# package carries. trufflehog's image scan reports it as a **verified**
+# PrivateKey and fails the build with exit 183. "Verified" is doing something
+# unintuitive here: the key is not ours and never was, but someone registered
+# that well-known public key on their own GitHub account, so trufflehog's
+# verifier gets a live hit. `--only-verified` therefore does NOT filter it —
+# which is worth remembering, because it means verified != "a real secret of
+# ours".
+#
+# ssh2 arrives transitively (nothing here imports it directly) and its test
+# directory is never read at runtime, so removing it is safe and also trims the
+# image. Scoped by -path rather than `rm -rf node_modules/ssh2/test` so nested
+# copies under another package's node_modules are caught too.
+#
+# This is narrow on purpose. A blanket sweep of every test/ directory in
+# node_modules would pre-empt the next package that ships a fixture key, but a
+# few packages do load files from those paths, and that is not verifiable
+# without booting the app. If a second fixture ever trips this, the durable fix
+# is path-exclusion support in the shared docker-build-check scan rather than a
+# growing list here.
+RUN find node_modules -type d -path '*/ssh2/test' -prune -exec rm -rf {} +
+
 # Stage 4 — runtime: the compiled result, without the compiler.
 FROM node:24-trixie-slim
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
