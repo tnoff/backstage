@@ -1,19 +1,26 @@
+# Production config, layered over app-config.yaml.
+#
+# Access is internal-only, over the bastion port-forward that
+# oci-bastion-keepalive holds (backstage/svc/backstage:7007). There is no
+# Ingress, no Certificate and no public hostname -- see docs
+# projects/service-catalog.md, "Runtime placement". The browser therefore talks
+# to 127.0.0.1:7007, and because the app-backend plugin serves the frontend from
+# the backend, app.baseUrl and backend.baseUrl are the same URL.
+
 app:
-  # Should be the same as backend.baseUrl when using the `app-backend` plugin.
-  baseUrl: http://localhost:7007
+  baseUrl: http://127.0.0.1:7007
 
 backend:
-  # Note that the baseUrl should be the URL that the browser and other clients
-  # should use when communicating with the backend, i.e. it needs to be
-  # reachable not just from within the backend host, but from all of your
-  # callers. When its value is "http://localhost:7007", it's strictly private
-  # and can't be reached by others.
-  baseUrl: http://localhost:7007
-  # The listener can also be expressed as a single <host>:<port> string. In this case we bind to
-  # all interfaces, the most permissive setting. The right value depends on your specific deployment.
+  baseUrl: http://127.0.0.1:7007
   listen: ':7007'
 
-  # config options: https://node-postgres.com/apis/client
+  # Same origin as the baseUrls above: the frontend is served by the backend, so
+  # there is no separate dev-server origin to allow.
+  cors:
+    origin: http://127.0.0.1:7007
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
   database:
     client: pg
     connection:
@@ -21,35 +28,36 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
-      # https://node-postgres.com/features/ssl
-      # you can set the sslmode configuration option via the `PGSSLMODE` environment variable
-      # see https://www.postgresql.org/docs/current/libpq-ssl.html Table 33.1. SSL Mode Descriptions (e.g. require)
-      # ssl:
-      #   ca: # if you have a CA file and want to verify it you can uncomment this section
-      #     $file: <file-path>/ca/server.crt
+      # Encrypt, but do not verify the server certificate -- the node-postgres
+      # equivalent of the sslmode=require that the discord backup CronJob uses.
+      # Spilo presents a self-signed cert and only accepts `hostssl` for remote
+      # pods, so without SSL the connection is refused outright and the pod
+      # CrashLoops on startup.
+      #
+      # Set EXPLICITLY rather than via the PGSSLMODE env var the scaffold's
+      # comment suggests. PGSSLMODE only takes effect through node-postgres'
+      # environment fallback, and this config already passes explicit connection
+      # options -- so whether the fallback still applies is a question about
+      # library internals, and the failure mode if it does not is a CrashLoop.
+      # Not worth betting on when one line settles it.
+      ssl:
+        rejectUnauthorized: false
 
 auth:
   providers:
     guest: {}
 
 catalog:
-  # Overrides the default list locations from app-config.yaml as these contain example data.
-  # See https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog for more details
-  # on how to get entities into the catalog.
-  locations:
-    # Local example data, replace this with your production config, these are intended for demo use only.
-    # File locations are relative to the backend process, typically in a deployed context, such as in a Docker container, this will be the root
-    - type: file
-      target: ./examples/entities.yaml
-
-    # Local example template
-    - type: file
-      target: ./examples/template/template.yaml
-      rules:
-        - allow: [Template]
-
-    # Local example organizational data
-    - type: file
-      target: ./examples/org.yaml
-      rules:
-        - allow: [User, Group]
+  # Deliberately EMPTY for Phase 1.
+  #
+  # This replaces the scaffold's example locations, which point at
+  # ./examples/*.yaml -- files that are not in the runtime image (the Dockerfile
+  # ships app-config*.yaml and the backend bundle, not the repo root). Leaving
+  # them would mean the catalog fails to load its own configured locations on
+  # every start.
+  #
+  # Real entities arrive in Phase 2, when personal-website and eastbay grow
+  # their catalog-info.yaml files and this list gains url: locations pointing at
+  # them. Serving an empty catalog is the accepted cost of deploying first --
+  # see the 2026-08-22 decision in the project doc.
+  locations: []
