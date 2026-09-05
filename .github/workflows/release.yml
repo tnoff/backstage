@@ -1,0 +1,73 @@
+name: Release
+
+# Default-branch pipeline: fold the changelog, tag, and push the image.
+#
+# ---------------------------------------------------------------------------
+# The fold guard
+# ---------------------------------------------------------------------------
+# assemble-changelog pushes a "docs: assemble changelog for X" commit to main,
+# which triggers this workflow a SECOND time. That second pass is what cuts the
+# tag, because tag defers while fragments are still pending.
+#
+# The image must NOT be pushed twice. The deleted .gitlab-ci.yml carried the
+# same guard as .not-on-changelog-fold, and its reasoning holds unchanged: the
+# fold commit is byte-identical in the image context, so a second push would
+# skip the tag write on a shared digest and leave anything pinning that tag
+# referencing something never written.
+#
+# This repo is the fleet's heaviest build, so a wasted rebuild is not a
+# rounding error -- it is the single most expensive thing CI can do here.
+#
+# ---------------------------------------------------------------------------
+# No trigger-bump, deliberately
+# ---------------------------------------------------------------------------
+# Every other image producer ends by asking docker-apps to bump its pin.
+# docker-apps has no backstage/ tree yet, so there is nothing to rewrite and
+# firing a dispatch would bump a file that does not exist. The
+# trigger-bump-dispatch job lands in the same change that creates that tree,
+# so the image exists before anything pins it.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  assemble-changelog:
+    name: Assemble changelog
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/assemble-changelog.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  tag:
+    name: Tag
+    needs: assemble-changelog
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/tag.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    with:
+      gate_on_fragments: true
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  push-image:
+    name: Push image
+    if: "${{ !startsWith(github.event.head_commit.message, 'docs: assemble changelog') }}"
+    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    # registry / namespace / repo_name are INPUTS, not secrets. GitHub refuses
+    # to set a job output containing secret material, so as secrets the `image`
+    # output comes back EMPTY. See github-workflows!98.
+    with:
+      registry: ${{ vars.OCI_REGISTRY }}
+      namespace: ${{ vars.OCI_NAMESPACE }}
+      repo_name: ${{ vars.OCI_REPO_NAME }}
+    secrets:
+      oci_username: ${{ secrets.OCI_USERNAME }}
+      oci_token: ${{ secrets.OCI_TOKEN }}
