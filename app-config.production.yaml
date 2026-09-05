@@ -44,6 +44,18 @@ backend:
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
+      # Required under pluginDivisionMode: schema, and easy to miss because the
+      # scaffold's connection block does not have it.
+      #
+      # In the DEFAULT division mode Backstage computes a database name per
+      # plugin (backstage_plugin_app, ...), so `database` is never consulted.
+      # In schema mode it connects to ONE database -- and with no name given,
+      # node-postgres falls back to the USERNAME. That produced:
+      #
+      #   database "backstage.backstage" does not exist
+      #
+      # which reads like a role problem and is actually a missing key.
+      database: backstage
       # Encrypt, but do not verify the server certificate -- the node-postgres
       # equivalent of the sslmode=require that the discord backup CronJob uses.
       # Spilo presents a self-signed cert and only accepts `hostssl` for remote
