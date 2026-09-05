@@ -1,0 +1,147 @@
+name: CI
+
+# Pull-request checks, ported from the .gitlab-ci.yml this change deletes.
+# Shared jobs come from tnoff/github-workflows, SHA-pinned the way the GitLab
+# `include:` refs were; Renovate's github-actions manager keeps the pins current.
+#
+# Every pin here is the same SHA on purpose. The fleet's older callers carry a
+# spread of refs because Renovate bumps them line by line over time, and that
+# spread is what made the app_id -> app_client_id rename break repos at
+# STARTUP. A new file starts converged.
+
+on:
+  pull_request:
+
+# One in-flight run per PR. Renovate force-pushes on rebase
+# (rebaseWhen: behind-base-branch), and without this every rebase leaves its
+# predecessor running to completion -- which matters more here than anywhere
+# else on the fleet, because this build is the longest one there is.
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Scan for secrets
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+
+  # Reimplements .image-build-rules' `changes:` block from the deleted
+  # .gitlab-ci.yml. Backstage compiles the whole monorepo inside the image, so
+  # the trigger set is broad: anything that feeds `yarn install`, `tsc` or the
+  # app build invalidates it, not just the Dockerfile.
+  #
+  # Done with git rather than a path-filter action, to avoid another pinned
+  # dependency for ~10 lines of shell. A workflow-level `paths:` filter would
+  # be wrong: it would gate the secret scan and bump-version too.
+  changes:
+    name: Detect image-input changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.filter.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Filter
+        id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --quiet origin "${BASE_REF}"
+          MATCH=false
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            case "$f" in
+              # .dockerignore is listed alongside the Dockerfile deliberately.
+              # The two are one unit: the .dockerignore create-app ships is
+              # written for the host-build Dockerfile it also ships, and
+              # excludes plugins/ and packages/*/src -- fatal for this
+              # multi-stage build, which compiles in-image. Replacing one means
+              # replacing the other, so a change to either must rebuild.
+              Dockerfile|.dockerignore) MATCH=true; break ;;
+              package.json|yarn.lock|.yarnrc.yml|tsconfig.json) MATCH=true; break ;;
+              app-config*.yaml) MATCH=true; break ;;
+              # `*` matches `/` in a case pattern, so these cover nested paths.
+              packages/*|plugins/*|.yarn/*) MATCH=true; break ;;
+            esac
+          done <<< "$(git diff --name-only "origin/${BASE_REF}...HEAD")"
+          echo "image inputs changed: ${MATCH}"
+          echo "image=${MATCH}" >> "$GITHUB_OUTPUT"
+
+  # GitLab ran this as pr-check:build on a self-hosted arm64 runner, and it was
+  # the fleet's problem child: eight attempts, seven killed by the node's
+  # kubelet giving up under a CPU-bound build, and one 3910s pass only after
+  # dropping to KUBERNETES_CPU_LIMIT: 500m. None of that carries over.
+  # docker-build-check defaults to ubuntu-24.04-arm and linux/arm64, so this is
+  # a native build on a hosted runner -- no QEMU, no cpu_limit, no node to
+  # starve. arm64 runners are free on public repos.
+  #
+  # NOTE: conditional, so it must never be added to required_status_checks --
+  # a required check that skips blocks the merge.
+  build:
+    name: Build and scan image
+    needs: changes
+    if: needs.changes.outputs.image == 'true'
+    uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+
+  bump-version:
+    name: Bump version
+    # Matches the rule the deleted .gitlab-ci.yml had. The dev- prefix comes
+    # from the shared renovate preset and is load-bearing: it is what decides
+    # whether an update bumps VERSION, writes a changelog fragment, and
+    # therefore cuts a release.
+    if: startsWith(github.head_ref, 'renovate/dev-')
+    permissions:
+      contents: write
+    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    with:
+      bump_changelog: true
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  result:
+    name: CI result
+    # The stable name for the branch ruleset to require.
+    #
+    # Requiring the individual jobs by name does not gate anything: GitHub
+    # scores a `skipped` required check as SUCCESS, and every shared workflow
+    # here carries an `allow_fork_prs` gate that can skip its only job.
+    #
+    # The image build is conditional on `changes`, so it is `skipped` on a PR
+    # that touches no image input -- correct, and why skipped passes below. It
+    # is also why the build leg must never be required by name: it would pass
+    # vacuously.
+    #
+    # This job always runs and its name never changes, so the ruleset requires
+    # exactly one context and the jobs underneath stay free to change.
+    if: always()
+    needs: [secrets, changes, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Summarise
+        run: |
+          echo "secrets: ${{ needs.secrets.result }}"
+          echo "changes: ${{ needs.changes.result }}"
+          echo "build:   ${{ needs.build.result }}"
+
+      - name: Fail if any job failed
+        # `skipped` is deliberately allowed: with allow_fork_prs false a fork
+        # PR skips the cascade, which is the intended outcome, not a failure.
+        if: >-
+          needs.secrets.result == 'failure' || needs.secrets.result == 'cancelled' ||
+          needs.changes.result == 'failure' || needs.changes.result == 'cancelled' ||
+          needs.build.result == 'failure' || needs.build.result == 'cancelled'
+        run: |
+          echo "::error::One or more CI jobs did not pass."
+          exit 1

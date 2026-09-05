@@ -1,0 +1,16 @@
+# Tuned for the MULTI-STAGE Dockerfile at the repo root, which compiles the
+# monorepo INSIDE the image.
+#
+# The variant create-app ships is tuned for the host-build flow it also ships,
+# and excludes `packages/*/src` and `plugins` outright — correct when the image
+# only ever copies packages/backend/dist, but fatal here: `yarn tsc` would have
+# no source to compile. Keep this file in sync with the root Dockerfile, not
+# with upstream's.
+.git
+node_modules
+**/node_modules
+.yarn/cache
+.yarn/install-state.gz
+packages/*/dist
+packages/*/dist-types
+*.local.yaml

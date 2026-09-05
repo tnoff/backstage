@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["gitlab>tnoff-projects/github-workflows//renovate/default"],
+  "enabledManagers": ["gitlabci", "gitlabci-include", "dockerfile", "npm", "custom.regex"],
+  "packageRules": [
+    {
+      "description": "Backstage ships ~100 packages in lockstep, and a per-package fan-out over a yarn.lock this size is exactly the shape that has OOMKilled the Renovate job before. One grouped MR instead.",
+      "matchPackageNames": ["@backstage/**"],
+      "groupName": "backstage monorepo",
+      "additionalBranchPrefix": "dev-"
+    },
+    {
+      "description": "Everything else npm, also grouped, for the same reason.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["!@backstage/**"],
+      "groupName": "npm dependencies",
+      "additionalBranchPrefix": "dev-"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "additionalBranchPrefix": "dev-"
+    }
+  ],
+  "lockFileMaintenance": { "enabled": false }
+}
