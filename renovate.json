@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["gitlab>tnoff-projects/github-workflows//renovate/default"],
-  "enabledManagers": ["gitlabci", "gitlabci-include", "dockerfile", "npm", "custom.regex"],
+  "extends": ["github>tnoff/github-workflows//renovate/default-github"],
+  "enabledManagers": ["github-actions", "dockerfile", "npm", "custom.regex"],
   "packageRules": [
     {
       "description": "Backstage ships ~100 packages in lockstep, and a per-package fan-out over a yarn.lock this size is exactly the shape that has OOMKilled the Renovate job before. One grouped MR instead.",
