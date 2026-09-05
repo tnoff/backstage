@@ -23,6 +23,22 @@ backend:
 
   database:
     client: pg
+    # Keep every plugin in the `backstage` database, as separate SCHEMAS.
+    #
+    # Backstage's DEFAULT is one DATABASE per plugin -- backstage_plugin_app,
+    # backstage_plugin_catalog, and so on, created at startup. That default
+    # needs CREATEDB on the role and it breaks the backup: the CronJob in
+    # docker-apps dumps DATABASE_NAME=backstage, which under the default would
+    # be an empty shell while every byte of real data sat in databases the dump
+    # never touched. A backup that silently captures nothing is the worst
+    # possible failure here, because it only surfaces on restore.
+    #
+    # Schema mode fixes both at once: no CREATEDB grant, and one database that
+    # pg_dump actually captures in full. It also makes the operator-side
+    # ownership choice load-bearing rather than incidental -- creating a schema
+    # requires owning the database, which `databases: {backstage:
+    # backstage.backstage}` already arranges.
+    pluginDivisionMode: schema
     connection:
       host: ${POSTGRES_HOST}
       port: ${POSTGRES_PORT}
