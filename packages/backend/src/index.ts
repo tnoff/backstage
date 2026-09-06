@@ -1,72 +1,53 @@
 /*
- * Hi!
+ * Catalog-only backend.
  *
- * Note that this is an EXAMPLE Backstage backend. Please check the README.
+ * Trimmed from the create-app default, which registers 21 plugins. The goal
+ * for now is a working software catalog and nothing else; everything below
+ * that is not needed for that is removed rather than left running.
  *
- * Happy hacking!
+ * Removing a `backend.add` line stops the plugin being INITIALISED. It does
+ * not remove the dependency, so the image is the same size -- shrinking that
+ * means dropping the packages from package.json and regenerating yarn.lock,
+ * which is a separate change because the Dockerfile runs
+ * `yarn install --immutable` and a stale lockfile fails the build outright.
+ *
+ * Removed, and why each is safe to drop for a catalog:
+ *   proxy                     nothing proxies through this yet
+ *   scaffolder (+github,      no software templates; also drops the catalog's
+ *     +notifications)         scaffolder-entity-model module
+ *   techdocs                  no docs published; TechDocs is phase 3
+ *   permission (+allow-all)   `permission.enabled` defaults to false, so the
+ *                             frontend short-circuits its checks and never
+ *                             calls /api/permission
+ *   search (+pg, +catalog,    nothing to search while the catalog is empty
+ *     +techdocs)
+ *   kubernetes                phase 2 at the earliest, and it needs a cluster
+ *                             locator config that does not exist yet
+ *   user-settings             per-user state we have no users for
+ *   notifications, signals    both exist to serve other plugins' events
+ *   mcp-actions               not wired to anything
+ *
+ * Each is one line to restore, and the removals are deliberately grouped so
+ * putting one back does not require re-deriving what it depended on.
  */
 
 import { createBackend } from '@backstage/backend-defaults';
 
 const backend = createBackend();
 
+// Serves the compiled frontend bundle. Without it there is no UI at all.
 backend.add(import('@backstage/plugin-app-backend'));
-backend.add(import('@backstage/plugin-proxy-backend'));
 
-// scaffolder plugin
-backend.add(import('@backstage/plugin-scaffolder-backend'));
-backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
-backend.add(
-  import('@backstage/plugin-scaffolder-backend-module-notifications'),
-);
-
-// techdocs plugin
-backend.add(import('@backstage/plugin-techdocs-backend'));
-
-// auth plugin
+// Guest auth. The frontend requires a signed-in identity before it will
+// render, so this is not optional even with a single operator and no SSO.
 backend.add(import('@backstage/plugin-auth-backend'));
-// See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-// See https://backstage.io/docs/auth/guest/provider
 
-// catalog plugin
+// The point of the exercise.
 backend.add(import('@backstage/plugin-catalog-backend'));
-backend.add(
-  import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
-);
-
-// See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
+// Kept deliberately: it subscribes to catalog errors and logs them, which is
+// the only visibility into a location that fails to load.
+// https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
-
-// permission plugin
-backend.add(import('@backstage/plugin-permission-backend'));
-// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
-
-// search plugin
-backend.add(import('@backstage/plugin-search-backend'));
-
-// search engine
-// See https://backstage.io/docs/features/search/search-engines
-backend.add(import('@backstage/plugin-search-backend-module-pg'));
-
-// search collators
-backend.add(import('@backstage/plugin-search-backend-module-catalog'));
-backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
-
-// kubernetes plugin
-backend.add(import('@backstage/plugin-kubernetes-backend'));
-
-// user settings plugin
-backend.add(import('@backstage/plugin-user-settings-backend'));
-
-// notifications and signals plugins
-backend.add(import('@backstage/plugin-notifications-backend'));
-backend.add(import('@backstage/plugin-signals-backend'));
-
-// mcp actions plugin
-backend.add(import('@backstage/plugin-mcp-actions-backend'));
 
 backend.start();

@@ -75,6 +75,21 @@ auth:
   providers:
     guest: {}
 
+# Overrides app-config.yaml, which ships `enabled: true`.
+#
+# With permissions ON, the frontend calls /api/permission/authorize and the
+# backend must run plugin-permission-backend plus a policy module to answer.
+# The scaffold's policy is allow-all, so the whole round trip exists to return
+# "yes" to a single guest user -- two plugins and a network call to enforce
+# nothing.
+#
+# Turning it off lets those two plugins go (see packages/backend/src/index.ts).
+# @backstage/plugin-permission-react short-circuits when disabled, so no call
+# is made and nothing 404s. Turn this back on in the same change that adds a
+# real policy and a real identity provider.
+permission:
+  enabled: false
+
 catalog:
   # Deliberately EMPTY for Phase 1.
   #
