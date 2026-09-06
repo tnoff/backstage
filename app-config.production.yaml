@@ -99,8 +99,17 @@ catalog:
   # them would mean the catalog fails to load its own configured locations on
   # every start.
   #
-  # Real entities arrive in Phase 2, when personal-website and eastbay grow
+  # Component entities arrive in Phase 2, when personal-website and eastbay grow
   # their catalog-info.yaml files and this list gains url: locations pointing at
-  # them. Serving an empty catalog is the accepted cost of deploying first --
-  # see the 2026-08-22 decision in the project doc.
-  locations: []
+  # them.
+  locations:
+    # Org entities, shipped in the image (see the Dockerfile COPY). The path is
+    # relative to the backend's working directory, which is /app.
+    - type: file
+      target: ./catalog/org.yaml
+      # Required. The base config's catalog.rules allow
+      # Component/System/API/Resource/Location and NOT User or Group, so
+      # without this the location loads and is then rejected entity by entity
+      # -- the catalog stays empty and the reason is only visible in the logs.
+      rules:
+        - allow: [User, Group]

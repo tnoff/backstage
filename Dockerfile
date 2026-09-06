@@ -154,6 +154,9 @@ WORKDIR /app
 COPY --from=prod-deps --chown=node:node /app ./
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
 COPY --chown=node:node app-config*.yaml ./
+# Org entities (Group/User). Referenced by app-config.production.yaml as
+# ./catalog/org.yaml, relative to this WORKDIR.
+COPY --chown=node:node catalog ./catalog
 
 ENV NODE_ENV=production
 EXPOSE 7007
