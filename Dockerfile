@@ -154,6 +154,10 @@ WORKDIR /app
 COPY --from=prod-deps --chown=node:node /app ./
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
 COPY --chown=node:node app-config*.yaml ./
+# The catalog descriptor: this repo's Component plus the org entities.
+# Referenced by app-config.production.yaml as ./catalog-info.yaml, relative to
+# this WORKDIR.
+COPY --chown=node:node catalog-info.yaml ./
 
 ENV NODE_ENV=production
 EXPOSE 7007
