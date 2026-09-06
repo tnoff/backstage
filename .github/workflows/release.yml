@@ -19,13 +19,12 @@ name: Release
 # rounding error -- it is the single most expensive thing CI can do here.
 #
 # ---------------------------------------------------------------------------
-# No trigger-bump, deliberately
+# trigger-bump
 # ---------------------------------------------------------------------------
-# Every other image producer ends by asking docker-apps to bump its pin.
-# docker-apps has no backstage/ tree yet, so there is nothing to rewrite and
-# firing a dispatch would bump a file that does not exist. The
-# trigger-bump-dispatch job lands in the same change that creates that tree,
-# so the image exists before anything pins it.
+# Asks docker-apps to rewrite its pin to the image this run just pushed. It was
+# deliberately absent until now: docker-apps had no backstage/ tree, and its
+# receiver ERRORS on an unknown source rather than ignoring it, so wiring this
+# early would have turned every release red.
 
 on:
   push:
@@ -71,3 +70,20 @@ jobs:
     secrets:
       oci_username: ${{ secrets.OCI_USERNAME }}
       oci_token: ${{ secrets.OCI_TOKEN }}
+
+  trigger-bump:
+    name: Trigger docker-apps bump
+    needs: push-image
+    uses: tnoff/github-workflows/.github/workflows/trigger-bump-dispatch.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    with:
+      # Matches the `backstage)` branch in docker-apps' bump-image-pin.yml,
+      # which resolves the image name and the file to rewrite from this key.
+      bump_source: backstage
+      image: ${{ needs.push-image.outputs.image }}
+      # The IMMUTABLE per-commit tag, not primary_tag (`latest`). Pinning a
+      # moving tag would leave the Deployment's manifest unchanged across
+      # releases, so Flux would see no diff and nothing would ever roll.
+      image_tag: ${{ needs.push-image.outputs.secondary_tag }}
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
