@@ -103,13 +103,15 @@ catalog:
   # their catalog-info.yaml files and this list gains url: locations pointing at
   # them.
   locations:
-    # Org entities, shipped in the image (see the Dockerfile COPY). The path is
-    # relative to the backend's working directory, which is /app.
+    # This repo's own descriptor, shipped in the image (see the Dockerfile
+    # COPY). The path is relative to the backend's working directory, /app.
     - type: file
-      target: ./catalog/org.yaml
-      # Required. The base config's catalog.rules allow
+      target: ./catalog-info.yaml
+      # Required, and easy to omit. The base config's catalog.rules allow
       # Component/System/API/Resource/Location and NOT User or Group, so
       # without this the location loads and is then rejected entity by entity
-      # -- the catalog stays empty and the reason is only visible in the logs.
+      # -- the catalog comes up missing the org entities and the only sign is a
+      # line in the logs. Component is listed too so this location does not
+      # depend on the base rules staying as they are.
       rules:
-        - allow: [User, Group]
+        - allow: [Component, User, Group]
