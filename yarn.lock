@@ -2408,50 +2408,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-auth-backend-module-guest-provider@npm:^0.2.22":
-  version: 0.2.22
-  resolution: "@backstage/plugin-auth-backend-module-guest-provider@npm:0.2.22"
-  dependencies:
-    "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/errors": "npm:^1.3.1"
-    "@backstage/plugin-auth-node": "npm:^0.7.4"
-    passport-oauth2: "npm:^1.7.0"
-  checksum: 10c0/5c3fc70ad9dfeb2db5d407eb0fe3618b029ddf2889a2211ca706bcbcd61bbdada6ab7e94811b14bbb76484bc7dd09a65e71e1b8dbcbce56175e5e2222705ac65
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-auth-backend@npm:^0.30.0":
-  version: 0.30.0
-  resolution: "@backstage/plugin-auth-backend@npm:0.30.0"
-  dependencies:
-    "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/config": "npm:^1.3.8"
-    "@backstage/errors": "npm:^1.3.1"
-    "@backstage/plugin-auth-node": "npm:^0.7.4"
-    "@backstage/plugin-catalog-node": "npm:^2.2.4"
-    "@backstage/types": "npm:^1.2.2"
-    "@google-cloud/firestore": "npm:^7.0.0"
-    connect-session-knex: "npm:^4.0.0"
-    cookie-parser: "npm:^1.4.5"
-    express: "npm:^4.22.0"
-    express-promise-router: "npm:^4.1.0"
-    express-session: "npm:^1.17.1"
-    ipaddr.js: "npm:^2.3.0"
-    jose: "npm:^5.0.0"
-    knex: "npm:^3.0.0"
-    lodash: "npm:^4.17.21"
-    luxon: "npm:^3.0.0"
-    matcher: "npm:^4.0.0"
-    minimatch: "npm:^10.2.1"
-    passport: "npm:^0.7.0"
-    zod: "npm:^3.25.76 || ^4.0.0"
-    zod-validation-error: "npm:^5.0.0"
-  checksum: 10c0/0f6f17583ef7bd688db15b2a1b39245e99be976039651d57dd40d530fb3a93a130b6356f20054ce1c7a7c2870fd2c9a94ebf08acf9e71108efe4bd0f1187738c
-  languageName: node
-  linkType: hard
-
 "@backstage/plugin-auth-node@npm:^0.7.4":
   version: 0.7.4
   resolution: "@backstage/plugin-auth-node@npm:0.7.4"
@@ -4319,19 +4275,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/firestore@npm:^7.0.0":
-  version: 7.11.6
-  resolution: "@google-cloud/firestore@npm:7.11.6"
-  dependencies:
-    "@opentelemetry/api": "npm:^1.3.0"
-    fast-deep-equal: "npm:^3.1.1"
-    functional-red-black-tree: "npm:^1.0.1"
-    google-gax: "npm:^4.3.3"
-    protobufjs: "npm:^7.2.6"
-  checksum: 10c0/db47b0abb30ac2c141522fa1de7906d7c9e79bfd1e55aaae4c2439ffb2a2f542a81f803781b5aa213eb0070a8eec1d1baeb5c20d70720a6c05d78ae967490d82
-  languageName: node
-  linkType: hard
-
 "@google-cloud/paginator@npm:^5.0.0":
   version: 5.0.2
   resolution: "@google-cloud/paginator@npm:5.0.2"
@@ -4468,44 +4411,6 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10c0/f9bab1370aa91e706abec4c8ea980e15293cb78bd4effba53ad2365dc39d81148db7667b3ef89b35f0a0b0ad58081ffdac4264b7125c69fa8393590ae5025745
-  languageName: node
-  linkType: hard
-
-"@grpc/grpc-js@npm:^1.10.9":
-  version: 1.14.4
-  resolution: "@grpc/grpc-js@npm:1.14.4"
-  dependencies:
-    "@grpc/proto-loader": "npm:^0.8.0"
-    "@js-sdsl/ordered-map": "npm:^4.4.2"
-  checksum: 10c0/0ff6395e8112ad30e8f99dbb684b997ebc3264e770b8e354f23effeedf181a380e0ecef8bca466cbbf3e9141968656144851de1da50f840a1efd9314c9812449
-  languageName: node
-  linkType: hard
-
-"@grpc/proto-loader@npm:^0.7.13":
-  version: 0.7.15
-  resolution: "@grpc/proto-loader@npm:0.7.15"
-  dependencies:
-    lodash.camelcase: "npm:^4.3.0"
-    long: "npm:^5.0.0"
-    protobufjs: "npm:^7.2.5"
-    yargs: "npm:^17.7.2"
-  bin:
-    proto-loader-gen-types: build/bin/proto-loader-gen-types.js
-  checksum: 10c0/514a134a724b56d73d0a202b7e02c84479da21e364547bacb2f4995ebc0d52412a1a21653add9f004ebd146c1e6eb4bcb0b8846fdfe1bfa8a98ed8f3d203da4a
-  languageName: node
-  linkType: hard
-
-"@grpc/proto-loader@npm:^0.8.0":
-  version: 0.8.1
-  resolution: "@grpc/proto-loader@npm:0.8.1"
-  dependencies:
-    lodash.camelcase: "npm:^4.3.0"
-    long: "npm:^5.0.0"
-    protobufjs: "npm:^7.5.5"
-    yargs: "npm:^17.7.2"
-  bin:
-    proto-loader-gen-types: build/bin/proto-loader-gen-types.js
-  checksum: 10c0/900814c2cbedd76ce5de083adc0696f746a652a79eeb09e8d04d53b864179e2c9aa127997b9bba8ef5f0ce0c11ee700a0e467732eb6cb1f3efdb952583533ccf
   languageName: node
   linkType: hard
 
@@ -5099,13 +5004,6 @@ __metadata:
     "@jridgewell/resolve-uri": "npm:^3.1.0"
     "@jridgewell/sourcemap-codec": "npm:^1.4.14"
   checksum: 10c0/4b30ec8cd56c5fd9a661f088230af01e0c1a3888d11ffb6b47639700f71225be21d1f7e168048d6d4f9449207b978a235c07c8f15c07705685d16dc06280e9d9
-  languageName: node
-  linkType: hard
-
-"@js-sdsl/ordered-map@npm:^4.4.2":
-  version: 4.4.2
-  resolution: "@js-sdsl/ordered-map@npm:4.4.2"
-  checksum: 10c0/cc7e15dc4acf6d9ef663757279600bab70533d847dcc1ab01332e9e680bd30b77cdf9ad885cc774276f51d98b05a013571c940e5b360985af5eb798dc1a2ee2b
   languageName: node
   linkType: hard
 
@@ -6599,7 +6497,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:^1.3.0, @opentelemetry/api@npm:^1.4.0, @opentelemetry/api@npm:^1.9.0":
+"@opentelemetry/api@npm:^1.4.0, @opentelemetry/api@npm:^1.9.0":
   version: 1.9.1
   resolution: "@opentelemetry/api@npm:1.9.1"
   checksum: 10c0/c608485fc8b5a91e1f7e05e843b45b509307456b31cd2ad365933d90813e40ebfedf179f1451c762037e82d7c76aa8500e95d2da3609f640a1206cde5322cd14
@@ -6842,21 +6740,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4, @protobufjs/codegen@npm:^2.0.5":
+"@protobufjs/codegen@npm:^2.0.4":
   version: 2.0.5
   resolution: "@protobufjs/codegen@npm:2.0.5"
   checksum: 10c0/1b8a2ae56ee60a56e9d205cd4b6072a1503c5069b8ebb905710f974ff0098a0d0700641c137e0a8d98dedf14423156a106a9433695cbf52574810f55000fdcab
   languageName: node
   linkType: hard
 
-"@protobufjs/eventemitter@npm:^1.1.0, @protobufjs/eventemitter@npm:^1.1.1":
+"@protobufjs/eventemitter@npm:^1.1.0":
   version: 1.1.1
   resolution: "@protobufjs/eventemitter@npm:1.1.1"
   checksum: 10c0/8e06193d4629c5e7c09d4f8c2ddba8fc4dfa739f0149f33a1d901568d35bb7b8b5277a4e8452baf3bdd0b302fd599cf255d193267aa93a0a4747e23cd073c4ac
   languageName: node
   linkType: hard
 
-"@protobufjs/fetch@npm:^1.1.0, @protobufjs/fetch@npm:^1.1.1":
+"@protobufjs/fetch@npm:^1.1.0":
   version: 1.1.1
   resolution: "@protobufjs/fetch@npm:1.1.1"
   dependencies:
@@ -6893,7 +6791,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0, @protobufjs/utf8@npm:^1.1.1":
+"@protobufjs/utf8@npm:^1.1.0":
   version: 1.1.2
   resolution: "@protobufjs/utf8@npm:1.1.2"
   checksum: 10c0/975c6e2c0319bd50c17531d186b537a88cb4d3205e3ca9297cd842b631d341da0ee3ff16be8656cd2660756dc753b29c8a6a14c0ad8ed602c1f91ddf22e7b3f3
@@ -9857,13 +9755,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/long@npm:^4.0.0":
-  version: 4.0.2
-  resolution: "@types/long@npm:4.0.2"
-  checksum: 10c0/42ec66ade1f72ff9d143c5a519a65efc7c1c77be7b1ac5455c530ae9acd87baba065542f8847522af2e3ace2cc999f3ad464ef86e6b7352eece34daf88f8c924
-  languageName: node
-  linkType: hard
-
 "@types/luxon@npm:^3.0.0":
   version: 3.7.4
   resolution: "@types/luxon@npm:3.7.4"
@@ -11804,9 +11695,6 @@ __metadata:
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/config": "npm:^1.3.8"
     "@backstage/plugin-app-backend": "npm:^0.5.17"
-    "@backstage/plugin-auth-backend": "npm:^0.30.0"
-    "@backstage/plugin-auth-backend-module-guest-provider": "npm:^0.2.22"
-    "@backstage/plugin-auth-node": "npm:^0.7.4"
     "@backstage/plugin-catalog-backend": "npm:^3.9.0"
     "@backstage/plugin-catalog-backend-module-logs": "npm:^0.1.25"
     app: "link:../app"
@@ -11930,13 +11818,6 @@ __metadata:
   version: 1.0.0
   resolution: "base64-stream@npm:1.0.0"
   checksum: 10c0/5735cb5678c61a01763cc158e599a57bf23cbc1d1d6e14e0bf28a559bf0ac3cc0ef223db415ec8cdc6eeb086b08b6340f2c949be89b5cb53f7d7abb8370dd823
-  languageName: node
-  linkType: hard
-
-"base64url@npm:3.x.x":
-  version: 3.0.1
-  resolution: "base64url@npm:3.0.1"
-  checksum: 10c0/5ca9d6064e9440a2a45749558dddd2549ca439a305793d4f14a900b7256b5f4438ef1b7a494e1addc66ced5d20f5c010716d353ed267e4b769e6c78074991241
   languageName: node
   linkType: hard
 
@@ -13175,16 +13056,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"connect-session-knex@npm:^4.0.0":
-  version: 4.0.2
-  resolution: "connect-session-knex@npm:4.0.2"
-  dependencies:
-    bluebird: "npm:^3.7.2"
-    knex: "npm:3"
-  checksum: 10c0/77cdb250e05d1da03568ed1ce413577cfaf96570085a1359ad528a55feedb7f3d3861b9e55f119597b8100e26df3fac532b6ef929d90b46341b0c21b15ae1214
-  languageName: node
-  linkType: hard
-
 "connect@npm:^3.7.0":
   version: 3.7.0
   resolution: "connect@npm:3.7.0"
@@ -13241,31 +13112,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie-parser@npm:^1.4.5":
-  version: 1.4.7
-  resolution: "cookie-parser@npm:1.4.7"
-  dependencies:
-    cookie: "npm:0.7.2"
-    cookie-signature: "npm:1.0.6"
-  checksum: 10c0/46bef553de409031b69a6074ce512d131a98e4fa12612669f1a9c3dd98d56897a31db86a3f4338d4a3a895c6f8d5cfd6fa4d99cdf588e0e8eda655efc3f384dc
-  languageName: node
-  linkType: hard
-
-"cookie-signature@npm:1.0.6":
-  version: 1.0.6
-  resolution: "cookie-signature@npm:1.0.6"
-  checksum: 10c0/b36fd0d4e3fef8456915fcf7742e58fbfcc12a17a018e0eb9501c9d5ef6893b596466f03b0564b81af29ff2538fd0aa4b9d54fe5ccbfb4c90ea50ad29fe2d221
-  languageName: node
-  linkType: hard
-
-"cookie-signature@npm:~1.0.6, cookie-signature@npm:~1.0.7":
+"cookie-signature@npm:~1.0.6":
   version: 1.0.7
   resolution: "cookie-signature@npm:1.0.7"
   checksum: 10c0/e7731ad2995ae2efeed6435ec1e22cdd21afef29d300c27281438b1eab2bae04ef0d1a203928c0afec2cee72aa36540b8747406ebe308ad23c8e8cc3c26c9c51
   languageName: node
   linkType: hard
 
-"cookie@npm:0.7.2, cookie@npm:^0.7.0, cookie@npm:~0.7.1, cookie@npm:~0.7.2":
+"cookie@npm:^0.7.0, cookie@npm:~0.7.1":
   version: 0.7.2
   resolution: "cookie@npm:0.7.2"
   checksum: 10c0/9596e8ccdbf1a3a88ae02cf5ee80c1c50959423e1022e4e60b91dd87c622af1da309253d8abdb258fb5e3eacb4f08e579dc58b4897b8087574eee0fd35dfa5d2
@@ -13953,7 +13807,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:2.6.9, debug@npm:^2.6.0, debug@npm:~2.6.9":
+"debug@npm:2.6.9, debug@npm:^2.6.0":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:
@@ -14466,7 +14320,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"duplexify@npm:^4.0.0, duplexify@npm:^4.1.3":
+"duplexify@npm:^4.1.3":
   version: 4.1.3
   resolution: "duplexify@npm:4.1.3"
   dependencies:
@@ -15607,22 +15461,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-session@npm:^1.17.1":
-  version: 1.19.0
-  resolution: "express-session@npm:1.19.0"
-  dependencies:
-    cookie: "npm:~0.7.2"
-    cookie-signature: "npm:~1.0.7"
-    debug: "npm:~2.6.9"
-    depd: "npm:~2.0.0"
-    on-headers: "npm:~1.1.0"
-    parseurl: "npm:~1.3.3"
-    safe-buffer: "npm:~5.2.1"
-    uid-safe: "npm:~2.1.5"
-  checksum: 10c0/b1766010a728c58ca1b93ea33d49008b0b16a8751e5767d36b5bf3dd2f7f77d9933bb55352d296edbad4824c8c65e33554f058a33f201406557c1b3615fd10dc
-  languageName: node
-  linkType: hard
-
 "express@npm:^4.14.0, express@npm:^4.22.0, express@npm:^4.22.1":
   version: 4.22.2
   resolution: "express@npm:4.22.2"
@@ -16320,13 +16158,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"functional-red-black-tree@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "functional-red-black-tree@npm:1.0.1"
-  checksum: 10c0/5959eed0375803d9924f47688479bb017e0c6816a0e5ac151e22ba6bfe1d12c41de2f339188885e0aa8eeea2072dad509d8e4448467e816bde0a2ca86a0670d3
-  languageName: node
-  linkType: hard
-
 "functions-have-names@npm:^1.2.3":
   version: 1.2.3
   resolution: "functions-have-names@npm:1.2.3"
@@ -16686,7 +16517,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-auth-library@npm:^9.3.0, google-auth-library@npm:^9.6.3":
+"google-auth-library@npm:^9.6.3":
   version: 9.15.1
   resolution: "google-auth-library@npm:9.15.1"
   dependencies:
@@ -16697,26 +16528,6 @@ __metadata:
     gtoken: "npm:^7.0.0"
     jws: "npm:^4.0.0"
   checksum: 10c0/6eef36d9a9cb7decd11e920ee892579261c6390104b3b24d3e0f3889096673189fe2ed0ee43fd563710e2560de98e63ad5aa4967b91e7f4e69074a422d5f7b65
-  languageName: node
-  linkType: hard
-
-"google-gax@npm:^4.3.3":
-  version: 4.6.1
-  resolution: "google-gax@npm:4.6.1"
-  dependencies:
-    "@grpc/grpc-js": "npm:^1.10.9"
-    "@grpc/proto-loader": "npm:^0.7.13"
-    "@types/long": "npm:^4.0.0"
-    abort-controller: "npm:^3.0.0"
-    duplexify: "npm:^4.0.0"
-    google-auth-library: "npm:^9.3.0"
-    node-fetch: "npm:^2.7.0"
-    object-hash: "npm:^3.0.0"
-    proto3-json-serializer: "npm:^2.0.2"
-    protobufjs: "npm:^7.3.2"
-    retry-request: "npm:^7.0.0"
-    uuid: "npm:^9.0.1"
-  checksum: 10c0/740e47beb1def74d3e0074f8582fd919423f6c261b8cfa1c6a6c1c5bf9d8b92a11f1afe07eb1eea2fda7f4b6603c836f9427ed3cfa4c04ae97eb00db7c291400
   languageName: node
   linkType: hard
 
@@ -17775,7 +17586,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ipaddr.js@npm:^2.1.0, ipaddr.js@npm:^2.3.0":
+"ipaddr.js@npm:^2.1.0":
   version: 2.5.0
   resolution: "ipaddr.js@npm:2.5.0"
   checksum: 10c0/5cef50d91a14f6388c3b5df3568ee7f8b18e07fa18896debc84d3393b78c1096e1b8e3a4f9fa9020c5ca5b556efc28550432f92a34d23c0cd643bd3194eb439d
@@ -19650,7 +19461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:^3.0.0":
+"knex@npm:^3.0.0":
   version: 3.1.0
   resolution: "knex@npm:3.1.0"
   dependencies:
@@ -20292,15 +20103,6 @@ __metadata:
   bin:
     marked: bin/marked.js
   checksum: 10c0/0013463855e31b9c88d8bb2891a611d10ef1dc79f2e3cbff1bf71ba389e04c5971298c886af0be799d7fa9aa4593b086a136062d59f1210b0480b026a8c5dc47
-  languageName: node
-  linkType: hard
-
-"matcher@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "matcher@npm:4.0.0"
-  dependencies:
-    escape-string-regexp: "npm:^4.0.0"
-  checksum: 10c0/7c90ba780a98542e6db4d1961e82a213f857a4e98b3e76e5f57e5ce19f4f4624e6f23279df397bbe2eed373c707964df93ceba546b80f3863fbb7962daa3a6ea
   languageName: node
   linkType: hard
 
@@ -21885,24 +21687,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth@npm:0.10.x":
-  version: 0.10.2
-  resolution: "oauth@npm:0.10.2"
-  checksum: 10c0/5660d652b31eb2a90509989955a75b02311591d2e3cfb04a3fb91deae0d22c259aa5c31a9e8845f760d749af901032e3cfd06d151bbda9a5ebb9b76268d3aef9
-  languageName: node
-  linkType: hard
-
 "object-assign@npm:^4, object-assign@npm:^4.0.1, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 10c0/1f4df9945120325d041ccf7b86f31e8bcc14e73d29171e37a7903050e96b81323784ec59f93f102ec635bcf6fa8034ba3ea0a8c7e69fa202b87ae3b6cec5a414
-  languageName: node
-  linkType: hard
-
-"object-hash@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "object-hash@npm:3.0.0"
-  checksum: 10c0/a06844537107b960c1c8b96cd2ac8592a265186bfa0f6ccafe0d34eabdb526f6fa81da1f37c43df7ed13b12a4ae3457a16071603bcd39d8beddb5f08c37b0f47
   languageName: node
   linkType: hard
 
@@ -22489,19 +22277,6 @@ __metadata:
     no-case: "npm:^3.0.4"
     tslib: "npm:^2.0.3"
   checksum: 10c0/05ff7c344809fd272fc5030ae0ee3da8e4e63f36d47a1e0a4855ca59736254192c5a27b5822ed4bae96e54048eec5f6907713cfcfff7cdf7a464eaf7490786d8
-  languageName: node
-  linkType: hard
-
-"passport-oauth2@npm:^1.7.0":
-  version: 1.8.0
-  resolution: "passport-oauth2@npm:1.8.0"
-  dependencies:
-    base64url: "npm:3.x.x"
-    oauth: "npm:0.10.x"
-    passport-strategy: "npm:1.x.x"
-    uid2: "npm:0.0.x"
-    utils-merge: "npm:1.x.x"
-  checksum: 10c0/16b431bd856b84dfe0c9c913dcbea6ff54875befac1035171b0dce1c77f79072dc5e26d785b13c2e62c034c8174a1a47571751d1066bdbcdb9108de217c0b19b
   languageName: node
   linkType: hard
 
@@ -23602,16 +23377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proto3-json-serializer@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "proto3-json-serializer@npm:2.0.2"
-  dependencies:
-    protobufjs: "npm:^7.2.5"
-  checksum: 10c0/802e6a34f6ebf07007b186768f1985494bdfa6dd92e14c89d10cda6c4cc14df707ad59b75054a17a582f481db12c7663d25f91f505d2a85d7d4174eb5d798628
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^7.0.0, protobufjs@npm:^7.2.5, protobufjs@npm:^7.2.6, protobufjs@npm:^7.3.2":
+"protobufjs@npm:^7.0.0":
   version: 7.5.5
   resolution: "protobufjs@npm:7.5.5"
   dependencies:
@@ -23628,25 +23394,6 @@ __metadata:
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
   checksum: 10c0/3d48896a916761e3e60b52f80027eb4fba3f5a6e3f8461e04939db18812db2cb0db4c73d03e1134a960e99525ae1d236f076a0bc01273016f573b76f33ffbd47
-  languageName: node
-  linkType: hard
-
-"protobufjs@npm:^7.5.5":
-  version: 7.6.5
-  resolution: "protobufjs@npm:7.6.5"
-  dependencies:
-    "@protobufjs/aspromise": "npm:^1.1.2"
-    "@protobufjs/base64": "npm:^1.1.2"
-    "@protobufjs/codegen": "npm:^2.0.5"
-    "@protobufjs/eventemitter": "npm:^1.1.1"
-    "@protobufjs/fetch": "npm:^1.1.1"
-    "@protobufjs/float": "npm:^1.0.2"
-    "@protobufjs/path": "npm:^1.1.2"
-    "@protobufjs/pool": "npm:^1.1.0"
-    "@protobufjs/utf8": "npm:^1.1.1"
-    "@types/node": "npm:>=13.7.0"
-    long: "npm:^5.3.2"
-  checksum: 10c0/863eaca9c6f45bfcfb8787c545f53e9c6696507e328e3981b4643c12d35df7f2826021c10e3fd30bef342c13a8e9d306547bac9c0849ee3bf50f770a12f01dc5
   languageName: node
   linkType: hard
 
@@ -23836,13 +23583,6 @@ __metadata:
     drange: "npm:^1.0.2"
     ret: "npm:^0.2.0"
   checksum: 10c0/44ad4e6e7661c090939e062916ccf1477de27eb2b91dfa8c113de9f3116ddf2016ac090323d5d2fa0947c3ff8e9b24798ee5e25cb2c37f22df2e72cda56232b6
-  languageName: node
-  linkType: hard
-
-"random-bytes@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "random-bytes@npm:1.0.0"
-  checksum: 10c0/71e7a600e0976e9ebc269793a0577d47b965fa678fcc9e9623e427f909d1b3669db5b3a178dbf61229f0724ea23dba64db389f0be0ba675c6a6b837c02f29b8f
   languageName: node
   linkType: hard
 
@@ -25467,7 +25207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:5.2.1, safe-buffer@npm:>=5.1.0, safe-buffer@npm:^5.0.1, safe-buffer@npm:^5.1.0, safe-buffer@npm:^5.1.1, safe-buffer@npm:^5.1.2, safe-buffer@npm:^5.2.1, safe-buffer@npm:~5.2.0, safe-buffer@npm:~5.2.1":
+"safe-buffer@npm:5.2.1, safe-buffer@npm:>=5.1.0, safe-buffer@npm:^5.0.1, safe-buffer@npm:^5.1.0, safe-buffer@npm:^5.1.1, safe-buffer@npm:^5.1.2, safe-buffer@npm:^5.2.1, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: 10c0/6501914237c0a86e9675d4e51d89ca3c21ffd6a31642efeba25ad65720bce6921c9e7e974e5be91a786b25aa058b5303285d3c15dbabf983a919f5f630d349f3
@@ -27683,22 +27423,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uid-safe@npm:~2.1.5":
-  version: 2.1.5
-  resolution: "uid-safe@npm:2.1.5"
-  dependencies:
-    random-bytes: "npm:~1.0.0"
-  checksum: 10c0/ec96862e859fd12175f3da7fda9d1359a2cf412fd521e10837cbdc6d554774079ce252f366981df9401283841c8924782f6dbee8f82a3a81f805ed8a8584595d
-  languageName: node
-  linkType: hard
-
-"uid2@npm:0.0.x":
-  version: 0.0.4
-  resolution: "uid2@npm:0.0.4"
-  checksum: 10c0/c3ed69da75d117214891f4743a1d8521db823d7a2f57644c1a9ae8b3bf25f0ba666d893264bf7e22be3dbbaa292d35a23d71d06ce7283458a65e8dd137c5c362
-  languageName: node
-  linkType: hard
-
 "unbox-primitive@npm:^1.1.0":
   version: 1.1.0
   resolution: "unbox-primitive@npm:1.1.0"
@@ -28165,7 +27889,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x, utils-merge@npm:^1.0.1":
+"utils-merge@npm:1.0.1, utils-merge@npm:^1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: 10c0/02ba649de1b7ca8854bfe20a82f1dfbdda3fb57a22ab4a8972a63a34553cf7aa51bc9081cf7e001b035b88186d23689d69e71b510e610a09a4c66f68aa95b672
