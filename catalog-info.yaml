@@ -26,13 +26,16 @@ kind: Component
 metadata:
   name: backstage
   description: The developer portal itself. Catalog only, for now.
-  annotations:
-    # github, not gitlab: this repo flipped to GitHub-canonical in the CI
-    # migration. The project spec still says gitlab.com/project-slug from
-    # before that, and this is the corrected form Phase 2 should copy.
-    github.com/project-slug: tnoff/backstage
-    # No backstage.io/techdocs-ref: the techdocs backend is not installed, so
-    # the annotation would advertise a Docs tab that cannot render.
+  # No annotations, and github.com/project-slug in particular is DERIVED rather
+  # than written here. The catalog registers AnnotateScmSlugEntityProcessor (see
+  # packages/backend/src/modules/scmSlugAnnotator.ts), which reads the slug off
+  # the location this file was fetched from -- so it cannot go stale, and it
+  # picks the right annotation name if the repo ever changes host. The hardcoded
+  # `gitlab.com/project-slug` left in the project spec after the GitHub
+  # migration is the failure that motivated this.
+  #
+  # No backstage.io/techdocs-ref either: the techdocs backend is not installed,
+  # so the annotation would advertise a Docs tab that cannot render.
 spec:
   type: website
   # Was `john@example.com` from create-app. A Group rather than a User so the

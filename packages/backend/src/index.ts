@@ -52,6 +52,8 @@
 
 import { createBackend } from '@backstage/backend-defaults';
 
+import { catalogModuleScmSlugAnnotator } from './modules/scmSlugAnnotator';
+
 const backend = createBackend();
 
 // Serves the compiled frontend bundle. Without it there is no UI at all.
@@ -68,5 +70,8 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 // descriptor to a repo is the whole of onboarding it, with no config change
 // here. Configured under catalog.providers.github in app-config.production.yaml.
 backend.add(import('@backstage/plugin-catalog-backend-module-github'));
+// Derives <host>/project-slug from each entity's location instead of every repo
+// hand-writing it. See the module for why it is registered rather than default.
+backend.add(catalogModuleScmSlugAnnotator);
 
 backend.start();

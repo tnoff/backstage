@@ -12000,6 +12000,7 @@ __metadata:
     "@backstage/plugin-catalog-backend": "npm:^3.9.0"
     "@backstage/plugin-catalog-backend-module-github": "npm:^0.13.5"
     "@backstage/plugin-catalog-backend-module-logs": "npm:^0.1.25"
+    "@backstage/plugin-catalog-node": "npm:^2.2.4"
     app: "link:../app"
     better-sqlite3: "npm:^12.0.0"
     node-gyp: "npm:^10.0.0"
