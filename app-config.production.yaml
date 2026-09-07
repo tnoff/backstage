@@ -14,6 +14,37 @@ backend:
   baseUrl: http://127.0.0.1:7007
   listen: ':7007'
 
+  auth:
+    # Accept unauthenticated requests to plugin routes.
+    #
+    # backend-defaults installs a credentials barrier ahead of every /api route
+    # that requires user or service credentials. It lives in backend-defaults,
+    # NOT in plugin-auth-backend, so it applies whether or not an auth plugin is
+    # installed -- and this app has no SignInPage, so the frontend never obtains
+    # a token to send. Every catalog call came back:
+    #
+    #   401 {"name":"AuthenticationError","message":"Missing credentials"}
+    #
+    # The frontend renders, the entity list is empty, and nothing in the UI says
+    # why. Removing the auth plugins did not cause this and restoring them would
+    # not fix it: a provider with no sign-in page still yields no token.
+    #
+    # `dangerously` is accurate about what it does -- it opens every /api route
+    # to anything that can reach the port -- and that is the access model
+    # already chosen deliberately. The only route to this port is a bastion
+    # tunnel authenticated by an OCI identity and an SSH key; see docs
+    # projects/service-catalog.md. Nothing is being widened here, it is being
+    # made to work.
+    #
+    # Note it also drops authentication on plugin-to-plugin calls. This backend
+    # runs app-backend and catalog, which make none.
+    #
+    # The alternative -- a SignInPage extension plus the guest provider with
+    # dangerouslyAllowOutsideDevelopment -- reinstates two plugins and a second
+    # dangerous flag to arrive at the same anonymous access. Revisit together
+    # with a real identity provider, not before.
+    dangerouslyDisableDefaultAuthPolicy: true
+
   # Same origin as the baseUrls above: the frontend is served by the backend, so
   # there is no separate dev-server origin to allow.
   cors:
@@ -181,8 +212,22 @@ catalog:
   rules:
     - allow: [Component, System, API, Resource, Location, Group]
 
-  # No `locations:`. This repo's own catalog-info.yaml is picked up by the
-  # discovery provider above, exactly like every other repo's.
+  # Empty, and NOT absent. app-config.yaml still carries the scaffold's example
+  # locations (../../examples/entities.yaml and friends), and config arrays
+  # replace rather than merge -- so when #12 deleted this block entirely those
+  # examples came back to life in production, where the files are not in the
+  # image:
+  #
+  #   warn  file /examples/org.yaml does not exist
+  #   warn  file /examples/template/template.yaml does not exist
+  #   warn  file /examples/entities.yaml does not exist
+  #
+  # once per refresh cycle, forever. They stay in the base config because they
+  # are useful for `yarn start` locally, where discovery has no credentials.
+  locations: []
+
+  # This repo's own catalog-info.yaml is picked up by the discovery provider
+  # above, exactly like every other repo's.
   #
   # It used to be loaded as a file location out of the image, and keeping both
   # would break: the two mechanisms emit the same entityRefs, and the catalog
