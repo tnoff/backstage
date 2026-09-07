@@ -190,41 +190,41 @@ catalog:
   import:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
+  # Group added to the scaffold's list. Rules apply to DISCOVERED locations too,
+  # and the GitHub discovery provider reads catalog-info.yaml files that carry
+  # the admin Group. Without Group here that entity is rejected one location at
+  # a time, the catalog comes up with every Component owned by a ref that
+  # resolves to nothing, and the only sign is a line in the logs.
   rules:
-    - allow: [Component, System, API, Resource, Location]
-  locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
-
-    # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
-      rules:
-        - allow: [Template]
-
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
-
-    ## Uncomment these lines to add more example data
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
-
-    ## Uncomment these lines to add an example org
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-    #   rules:
-    #     - allow: [User, Group]
+    - allow: [Component, System, API, Resource, Location, Group]
+  # No `locations:`. The scaffold's three example file locations are deleted, not
+  # overridden.
+  #
+  # They point at ../../examples/*.yaml -- sample entities and a scaffolder
+  # TEMPLATE, for a scaffolder plugin this app does not install. In the image
+  # they are not present at all (the Dockerfile ships app-config.yaml and the
+  # backend bundle, not the repo root), so production logged
+  # `file /examples/org.yaml does not exist` once per refresh cycle.
+  #
+  # Deleting beats overriding with `locations: []` from the deployment config:
+  # an override only works while someone remembers it exists, and it made the
+  # production config carry a line whose entire job was cancelling this one.
+  # Real entities arrive through catalog.providers.github instead.
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
 
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
-  # setting this to `false` will disable permissions
-  enabled: true
+  # Off, and set here rather than overridden from the deployment config: this is
+  # a fact about which plugins are installed, not about where the app runs.
+  #
+  # With permissions ON the frontend calls /api/permission/authorize and the
+  # backend must run plugin-permission-backend plus a policy module to answer.
+  # Neither is installed (see packages/backend/src/index.ts), and
+  # @backstage/plugin-permission-react short-circuits when disabled, so no call
+  # is made and nothing 404s. Turn this back on in the same change that adds a
+  # real policy and a real identity provider.
+  enabled: false
 
 # see https://backstage.io/docs/ai/mcp-actions for more details
