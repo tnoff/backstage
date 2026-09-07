@@ -155,12 +155,13 @@ proxy:
 # Note: After experimenting with basic setup, use CI/CD to generate docs
 # and an external cloud storage when deploying TechDocs for production use-case.
 # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
-techdocs:
-  builder: 'local' # Alternatives - 'external'
-  generator:
-    runIn: 'docker' # Alternatives - 'local'
-  publisher:
-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+# No `techdocs:` or `mcpActions:` blocks. Both plugins were removed in the
+# catalog-only trim, and their config went stale in place -- `backstage-cli
+# config:check --strict` flagged all three orphaned keys once a strict run was
+# finally done. Same class as the `auth:` block removed alongside the auth
+# plugins: configuration for code that is not installed.
+#
+# TechDocs config returns with the TechDocs backend, in phase 3.
 
 # No `auth:` block, and no auth plugins in the backend.
 #
@@ -227,6 +228,3 @@ permission:
   enabled: true
 
 # see https://backstage.io/docs/ai/mcp-actions for more details
-mcpActions:
-  name: 'My Company Backstage' # defaults to "backstage"
-  description: 'Tools for managing your software catalog, creating new services from templates, and exploring your developer portal' # optional

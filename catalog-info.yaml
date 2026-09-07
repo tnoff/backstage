@@ -16,8 +16,10 @@
 # back in the same change that adds a sign-in provider, when its name finally
 # has something to match against.
 #
-# Shipped in the image (see the Dockerfile COPY) and loaded as a file location
-# by app-config.production.yaml.
+# Read by the GitHub discovery provider straight from this repo, exactly like
+# every other repo's descriptor -- not copied into the image and not named in a
+# `locations:` block. Both mechanisms at once would emit these entityRefs twice
+# and the catalog rejects the duplicate.
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component

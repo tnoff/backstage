@@ -21,8 +21,8 @@
  *                             short-circuits its checks and never calls
  *                             /api/permission
  *   auth (+guest provider)    nothing ever called them -- see below
- *   search (+pg, +catalog,    nothing to search while the catalog is empty
- *     +techdocs)
+ *   search (+pg, +catalog,    still nothing worth indexing at this size; revisit
+ *     +techdocs)               once discovery has pulled in the whole fleet
  *   kubernetes                phase 2 at the earliest, and it needs a cluster
  *                             locator config that does not exist yet
  *   user-settings             per-user state we have no users for
@@ -63,5 +63,10 @@ backend.add(import('@backstage/plugin-catalog-backend'));
 // the only visibility into a location that fails to load.
 // https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
+// Catalog discovery across the fleet. Reads catalog-info.yaml out of every repo
+// the tnoff-backstage App can see and emits a Location for each -- so adding a
+// descriptor to a repo is the whole of onboarding it, with no config change
+// here. Configured under catalog.providers.github in app-config.production.yaml.
+backend.add(import('@backstage/plugin-catalog-backend-module-github'));
 
 backend.start();

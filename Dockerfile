@@ -154,10 +154,10 @@ WORKDIR /app
 COPY --from=prod-deps --chown=node:node /app ./
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
 COPY --chown=node:node app-config*.yaml ./
-# The catalog descriptor: this repo's Component plus the org entities.
-# Referenced by app-config.production.yaml as ./catalog-info.yaml, relative to
-# this WORKDIR.
-COPY --chown=node:node catalog-info.yaml ./
+# No catalog-info.yaml. It used to be copied in and loaded as a file location;
+# the GitHub discovery provider now reads it straight from the repo like every
+# other repo's, so shipping a second copy in the image would emit the same
+# entityRefs twice and the catalog would reject one of them.
 
 ENV NODE_ENV=production
 EXPOSE 7007
