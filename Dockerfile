@@ -161,4 +161,19 @@ COPY --chown=node:node app-config*.yaml ./
 
 ENV NODE_ENV=production
 EXPOSE 7007
-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+# Three configs, in precedence order -- later --config wins.
+#
+# The third is NOT in this image: docker-apps mounts it from the
+# backstage-config ConfigMap. It carries the where-this-runs settings (URLs,
+# CORS, database connection, auth policy) so changing one is a Flux sync and a
+# restart instead of a rebuild and a pin bump.
+#
+# This makes the ConfigMap a hard requirement: without the mount the backend
+# exits at startup on a missing config file. That is deliberate. The
+# alternative -- an entrypoint that adds the flag only when the file exists --
+# turns a missing deployment config into a pod that starts and silently serves
+# the wrong URLs against the wrong database.
+CMD ["node", "packages/backend", \
+     "--config", "app-config.yaml", \
+     "--config", "app-config.production.yaml", \
+     "--config", "/etc/backstage/config/app-config.deployment.yaml"]

@@ -1,107 +1,23 @@
-# Production config, layered over app-config.yaml.
+# Plugin-coupled production config, layered over app-config.yaml.
 #
-# Access is internal-only, over the bastion port-forward that
-# oci-bastion-keepalive holds (backstage/svc/backstage:7007). There is no
-# Ingress, no Certificate and no public hostname -- see docs
-# projects/service-catalog.md, "Runtime placement". The browser therefore talks
-# to 127.0.0.1:7007, and because the app-backend plugin serves the frontend from
-# the backend, app.baseUrl and backend.baseUrl are the same URL.
-
-app:
-  baseUrl: http://127.0.0.1:7007
-
-backend:
-  baseUrl: http://127.0.0.1:7007
-  listen: ':7007'
-
-  auth:
-    # Accept unauthenticated requests to plugin routes.
-    #
-    # backend-defaults installs a credentials barrier ahead of every /api route
-    # that requires user or service credentials. It lives in backend-defaults,
-    # NOT in plugin-auth-backend, so it applies whether or not an auth plugin is
-    # installed -- and this app has no SignInPage, so the frontend never obtains
-    # a token to send. Every catalog call came back:
-    #
-    #   401 {"name":"AuthenticationError","message":"Missing credentials"}
-    #
-    # The frontend renders, the entity list is empty, and nothing in the UI says
-    # why. Removing the auth plugins did not cause this and restoring them would
-    # not fix it: a provider with no sign-in page still yields no token.
-    #
-    # `dangerously` is accurate about what it does -- it opens every /api route
-    # to anything that can reach the port -- and that is the access model
-    # already chosen deliberately. The only route to this port is a bastion
-    # tunnel authenticated by an OCI identity and an SSH key; see docs
-    # projects/service-catalog.md. Nothing is being widened here, it is being
-    # made to work.
-    #
-    # Note it also drops authentication on plugin-to-plugin calls. This backend
-    # runs app-backend and catalog, which make none.
-    #
-    # The alternative -- a SignInPage extension plus the guest provider with
-    # dangerouslyAllowOutsideDevelopment -- reinstates two plugins and a second
-    # dangerous flag to arrive at the same anonymous access. Revisit together
-    # with a real identity provider, not before.
-    dangerouslyDisableDefaultAuthPolicy: true
-
-  # Same origin as the baseUrls above: the frontend is served by the backend, so
-  # there is no separate dev-server origin to allow.
-  cors:
-    origin: http://127.0.0.1:7007
-    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
-    credentials: true
-
-  database:
-    client: pg
-    # Keep every plugin in the `backstage` database, as separate SCHEMAS.
-    #
-    # Backstage's DEFAULT is one DATABASE per plugin -- backstage_plugin_app,
-    # backstage_plugin_catalog, and so on, created at startup. That default
-    # needs CREATEDB on the role and it breaks the backup: the CronJob in
-    # docker-apps dumps DATABASE_NAME=backstage, which under the default would
-    # be an empty shell while every byte of real data sat in databases the dump
-    # never touched. A backup that silently captures nothing is the worst
-    # possible failure here, because it only surfaces on restore.
-    #
-    # Schema mode fixes both at once: no CREATEDB grant, and one database that
-    # pg_dump actually captures in full. It also makes the operator-side
-    # ownership choice load-bearing rather than incidental -- creating a schema
-    # requires owning the database, which `databases: {backstage:
-    # backstage.backstage}` already arranges.
-    pluginDivisionMode: schema
-    connection:
-      host: ${POSTGRES_HOST}
-      port: ${POSTGRES_PORT}
-      user: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
-      # Required under pluginDivisionMode: schema, and easy to miss because the
-      # scaffold's connection block does not have it.
-      #
-      # In the DEFAULT division mode Backstage computes a database name per
-      # plugin (backstage_plugin_app, ...), so `database` is never consulted.
-      # In schema mode it connects to ONE database -- and with no name given,
-      # node-postgres falls back to the USERNAME. That produced:
-      #
-      #   database "backstage.backstage" does not exist
-      #
-      # which reads like a role problem and is actually a missing key.
-      database: backstage
-      # Encrypt, but do not verify the server certificate -- the node-postgres
-      # equivalent of the sslmode=require that the discord backup CronJob uses.
-      # Spilo presents a self-signed cert and only accepts `hostssl` for remote
-      # pods, so without SSL the connection is refused outright and the pod
-      # CrashLoops on startup.
-      #
-      # Set EXPLICITLY rather than via the PGSSLMODE env var the scaffold's
-      # comment suggests. PGSSLMODE only takes effect through node-postgres'
-      # environment fallback, and this config already passes explicit connection
-      # options -- so whether the fallback still applies is a question about
-      # library internals, and the failure mode if it does not is a CrashLoop.
-      # Not worth betting on when one line settles it.
-      ssl:
-        rejectUnauthorized: false
-
+# What is NOT here, and why: the URLs, CORS origin, listen address, database
+# connection and auth policy live in a ConfigMap in docker-apps
+# (apps/backstage/config.yaml), mounted at
+# /etc/backstage/config/app-config.deployment.yaml and layered LAST by the
+# Dockerfile CMD.
+#
+# The seam is what the config depends on. Everything in THIS file is
+# meaningless -- or actively breaks startup -- unless a matching plugin is
+# installed, so it belongs beside the package.json that installs it:
+# integrations.github needs the github catalog module, catalog.providers needs
+# the same, permission.enabled pairs with the permission plugins. Splitting
+# those across two repos lets a config change and its plugin land out of order,
+# and this project has already produced both failure modes -- a CrashLoop, and a
+# block that was silently inert.
+#
+# Everything in the ConfigMap is a where-this-runs fact that no plugin choice
+# affects, and moving it means a URL or credential change is a Flux sync and a
+# restart rather than an arm64 build, a release and a pin bump.
 
 # GitHub App used for catalog discovery. Contents + Metadata read across the
 # fleet, nothing else; created by hand, credentials plumbed by terraform-admin
