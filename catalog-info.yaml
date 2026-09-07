@@ -2,15 +2,22 @@
 # discovery expects it -- and the same file Phase 2 adds to personal-website and
 # eastbay. One convention, not a bespoke one for this repo.
 #
-# It carries three entities. That is deliberate: a location may hold multiple
-# documents, and for a single-operator fleet the portal's own Component and the
-# two org entities are one unit of "who owns what here". Split them when there
-# is a second team to split them between.
+# It carries two entities: this repo's Component, and the Group that owns it. A
+# location may hold multiple documents, and for a single-operator fleet the
+# portal's own Component and its owner are one unit of "who owns what here".
+# Split them when there is a second team to split them between.
+#
+# There is deliberately NO User entity. A User is an identity to sign IN as, and
+# nothing signs in -- the frontend installs no SignInPage, so the app renders
+# anonymously (see packages/backend/src/index.ts). A User with no sign-in path
+# is a row that never resolves to anybody. Ownership does not need one: `owner`
+# points at the Group, and a Group is valid with no members at all (the schema
+# requires spec.type and spec.children; spec.members is optional). Add the User
+# back in the same change that adds a sign-in provider, when its name finally
+# has something to match against.
 #
 # Shipped in the image (see the Dockerfile COPY) and loaded as a file location
-# by app-config.production.yaml. No GitHub integration is configured -- that
-# would be another secret for a portal reachable only over a bastion
-# port-forward -- so a url: location is not available yet.
+# by app-config.production.yaml.
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -26,7 +33,9 @@ metadata:
     # the annotation would advertise a Docs tab that cannot render.
 spec:
   type: website
-  # Was `john@example.com` from create-app. Now a real group -- see below.
+  # Was `john@example.com` from create-app. A Group rather than a User so the
+  # field keeps meaning if a second person ever appears -- and so it does not
+  # depend on an identity provider that does not exist.
   owner: group:default/admin
   lifecycle: production
 ---
@@ -39,15 +48,6 @@ metadata:
     until there is a reason to split ownership more finely.
 spec:
   type: team
+  # Required by the Group schema even when empty. Empty is correct: `children`
+  # holds nested GROUPS, not members, and there are no sub-groups.
   children: []
----
-apiVersion: backstage.io/v1alpha1
-kind: User
-metadata:
-  name: tnoff
-  description: Fleet operator.
-spec:
-  # No spec.profile.email on purpose: this repo is PUBLIC, and nothing needs
-  # the address yet. Sign-in resolvers can match on the entity name, and an
-  # email only becomes necessary if a provider is configured to resolve by it.
-  memberOf: [admin]

@@ -16,9 +16,11 @@
  *   scaffolder (+github,      no software templates; also drops the catalog's
  *     +notifications)         scaffolder-entity-model module
  *   techdocs                  no docs published; TechDocs is phase 3
- *   permission (+allow-all)   `permission.enabled` defaults to false, so the
- *                             frontend short-circuits its checks and never
- *                             calls /api/permission
+ *   permission (+allow-all)   `permission.enabled` is set false in
+ *                             app-config.production.yaml, so the frontend
+ *                             short-circuits its checks and never calls
+ *                             /api/permission
+ *   auth (+guest provider)    nothing ever called them -- see below
  *   search (+pg, +catalog,    nothing to search while the catalog is empty
  *     +techdocs)
  *   kubernetes                phase 2 at the earliest, and it needs a cluster
@@ -29,6 +31,23 @@
  *
  * Each is one line to restore, and the removals are deliberately grouped so
  * putting one back does not require re-deriving what it depended on.
+ *
+ * On auth specifically, because "it was configured" made it look alive:
+ * packages/app uses the DECLARATIVE frontend and installs no SignInPage
+ * extension. prepareSpecializedApp therefore leaves requiresSignIn false and
+ * clears the identity handlers, so the UI never initiates a sign-in and
+ * nothing ever reached /api/auth. The guest provider logged "Configuring auth
+ * provider: guest" at startup and would then have THROWN if called -- it
+ * refuses to run unless NODE_ENV is 'development' or
+ * `dangerouslyAllowOutsideDevelopment` is set, and the Dockerfile sets
+ * NODE_ENV=production. Configured, initialised, and unreachable.
+ *
+ * Access control is the bastion, not the app: the only route in is a
+ * port-forward authenticated by an OCI identity and an SSH key.
+ *
+ * Restoring sign-in takes TWO changes -- a provider module and config here,
+ * AND a SignInPage extension in packages/app. Doing only the first rebuilds
+ * exactly the dead wiring this removed.
  */
 
 import { createBackend } from '@backstage/backend-defaults';
@@ -37,11 +56,6 @@ const backend = createBackend();
 
 // Serves the compiled frontend bundle. Without it there is no UI at all.
 backend.add(import('@backstage/plugin-app-backend'));
-
-// Guest auth. The frontend requires a signed-in identity before it will
-// render, so this is not optional even with a single operator and no SSO.
-backend.add(import('@backstage/plugin-auth-backend'));
-backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 
 // The point of the exercise.
 backend.add(import('@backstage/plugin-catalog-backend'));

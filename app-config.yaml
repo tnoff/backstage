@@ -162,23 +162,25 @@ techdocs:
   publisher:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
-auth:
-  # see https://backstage.io/docs/auth/ to learn about auth providers
-  providers:
-    # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
-  # see https://backstage.io/docs/ai/mcp-actions#client-id-metadata-documents
-  # to learn more about client id metadata documents
-  clientIdMetadataDocuments:
-    enabled: false
-    # Optional: restrict which `client_id` URLs are allowed (defaults to ['*'])
-    # allowedClientIdPatterns:
-    #   - 'https://example.com/*'
-    #   - 'https://*.trusted-domain.com/*'
-    # Optional: restrict which redirect URIs are allowed (defaults to ['*'])
-    # allowedRedirectUriPatterns:
-    #   - 'http://localhost:*'
-    #   - 'https://*.example.com/*'
+# No `auth:` block, and no auth plugins in the backend.
+#
+# The scaffold shipped `providers: {guest: {}}` here. It was never reachable:
+# this app uses the DECLARATIVE frontend (@backstage/frontend-defaults) and
+# installs no SignInPage extension, so prepareSpecializedApp leaves
+# requiresSignIn false and clears the identity handlers -- the UI renders
+# without ever asking anyone to sign in. The guest provider would also have
+# thrown if it HAD been called: it refuses to run unless NODE_ENV is
+# 'development' or `dangerouslyAllowOutsideDevelopment` is set, and the
+# Dockerfile sets NODE_ENV=production.
+#
+# So this was configuration for a code path that could not execute. Access
+# control is the bastion: the only route to the pod is a port-forward
+# authenticated by an OCI identity and an SSH key. See docs
+# projects/service-catalog.md.
+#
+# Restoring sign-in is TWO changes, not one: a provider module + config here,
+# AND a SignInPage extension in packages/app. Adding only the first reproduces
+# exactly the dead configuration this replaced.
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
