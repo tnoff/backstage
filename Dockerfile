@@ -153,7 +153,11 @@ WORKDIR /app
 # and the backend skeleton — everything the focus install produced.
 COPY --from=prod-deps --chown=node:node /app ./
 COPY --from=build --chown=node:node /app/packages/backend/dist/bundle/ ./
-COPY --chown=node:node app-config*.yaml ./
+# app-config.yaml only. There is no app-config.production.yaml in this repo any
+# more -- production config is a ConfigMap in docker-apps
+# (apps/backstage/config.yaml), mounted at /etc/backstage/config. The glob is
+# gone with it so a stray app-config.*.yaml cannot be shipped by accident.
+COPY --chown=node:node app-config.yaml ./
 # No catalog-info.yaml. It used to be copied in and loaded as a file location;
 # the GitHub discovery provider now reads it straight from the repo like every
 # other repo's, so shipping a second copy in the image would emit the same
@@ -161,4 +165,18 @@ COPY --chown=node:node app-config*.yaml ./
 
 ENV NODE_ENV=production
 EXPOSE 7007
-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+# Two configs, in precedence order -- later --config wins.
+#
+# The second is NOT in this image: docker-apps mounts it from the
+# backstage-config ConfigMap. Production config lives there so changing it is a
+# Flux sync and a restart instead of a rebuild, a release and a pin bump.
+#
+# That makes the mount a HARD requirement -- without it the backend exits at
+# startup on a missing config file. Deliberate. An entrypoint that added the
+# flag only when the file existed would be worse than a crash: printing the
+# merged config with it absent gives app.baseUrl=localhost:3000 and
+# better-sqlite3 from the scaffold defaults, so the pod would start, serve the
+# wrong URLs and write to a local sqlite file instead of postgres.
+CMD ["node", "packages/backend", \
+     "--config", "app-config.yaml", \
+     "--config", "/etc/backstage/config/app-config.production.yaml"]
