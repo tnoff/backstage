@@ -38,6 +38,11 @@ metadata:
   # so the annotation would advertise a Docs tab that cannot render.
 spec:
   type: website
+  # The portal's only stateful dependency. POSTGRES_HOST on the Deployment is
+  # backstage-pg.backstage-postgres.svc.cluster.local, so this edge is read off
+  # the running pod rather than inferred from the manifests.
+  dependsOn:
+    - resource:default/backstage-postgres
   # Was `john@example.com` from create-app. A Group rather than a User so the
   # field keeps meaning if a second person ever appears -- and so it does not
   # depend on an identity provider that does not exist.
@@ -56,3 +61,22 @@ spec:
   # Required by the Group schema even when empty. Empty is correct: `children`
   # holds nested GROUPS, not members, and there are no sub-groups.
   children: []
+---
+# Declared here rather than in docker-apps, where postgresql/backstage/ applies its
+# manifests. A datastore sits with the system it serves -- the same rule that puts
+# discord-postgres and redis in discord-bot's descriptor. The monitoring stack is the
+# exception, and for a different reason: those components have no other repo to be
+# described from at all.
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: backstage-postgres
+  description: >-
+    The operator-managed `backstage-pg` cluster in the `backstage-postgres` namespace,
+    reached as the `backstage.backstage` role. Backed up nightly by the
+    backstage-database-backup CronJob. Holds one schema per plugin rather than one database
+    per plugin -- `pluginDivisionMode: schema`, which is why it is a single cluster and not
+    thirteen.
+spec:
+  type: database
+  owner: group:default/admin
