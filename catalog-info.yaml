@@ -21,6 +21,31 @@
 # `locations:` block. Both mechanisms at once would emit these entityRefs twice
 # and the catalog rejects the duplicate.
 ---
+# The backstage System, declared here because this repo owns the system -- the same
+# rule that puts the discord System in discord-bot and the monitoring System in
+# docker-apps.
+#
+# It was missing while two entities already claimed membership:
+# backstage-database-backups-bucket and backstage-database-backup, both declared in
+# docker-apps. `spec.system` on an entity does NOT create the System; an unresolved
+# system reference simply renders as unresolved, which is indistinguishable from a
+# typo and is exactly what a full-catalog audit exists to catch. It caught these.
+#
+# Membership is deliberately wider than this repo: the portal and its database are
+# here, its backup bucket and the CronJob that writes it are in docker-apps. That
+# split is recorded in the project spec as an operator routing call rather than
+# something the placement rule derives.
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: backstage
+  description: >-
+    The developer portal and everything that keeps it running: the Backstage app, its
+    operator-managed Postgres cluster, the nightly dump of that cluster and the bucket the
+    dump lands in.
+spec:
+  owner: group:default/admin
+---
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
@@ -48,6 +73,9 @@ spec:
   # depend on an identity provider that does not exist.
   owner: group:default/admin
   lifecycle: production
+  # Was absent, which left the portal outside the very System its own backup and
+  # bucket claimed membership of.
+  system: backstage
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Group
@@ -80,3 +108,4 @@ metadata:
 spec:
   type: database
   owner: group:default/admin
+  system: backstage
