@@ -152,16 +152,24 @@ proxy:
   #     changeOrigin: true
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
-# Note: After experimenting with basic setup, use CI/CD to generate docs
-# and an external cloud storage when deploying TechDocs for production use-case.
-# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
-# No `techdocs:` or `mcpActions:` blocks. Both plugins were removed in the
-# catalog-only trim, and their config went stale in place -- `backstage-cli
-# config:check --strict` flagged all three orphaned keys once a strict run was
-# finally done. Same class as the `auth:` block removed alongside the auth
-# plugins: configuration for code that is not installed.
-#
-# TechDocs config returns with the TechDocs backend, in phase 3.
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'docker'
+  publisher:
+    # 'local' writes to the pod's own filesystem: fine here, wrong in prod.
+    # It doesn't survive a restart and isn't shared across replicas, so
+    # app-config.production.yaml (outside this repo) must override this to
+    # an external publisher (e.g. `awsS3`, pointed at an S3-compatible
+    # bucket) before any component's docs are relied on there. See
+    # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+    type: 'local'
+
+# No `mcpActions:` block. That plugin was removed in the catalog-only trim,
+# and its config went stale in place -- `backstage-cli config:check --strict`
+# flagged it as an orphaned key once a strict run was finally done. Same
+# class as the `auth:` block removed alongside the auth plugins: configuration
+# for code that is not installed.
 
 # No `auth:` block, and no auth plugins in the backend.
 #

@@ -15,7 +15,6 @@
  *   proxy                     nothing proxies through this yet
  *   scaffolder (+github,      no software templates; also drops the catalog's
  *     +notifications)         scaffolder-entity-model module
- *   techdocs                  no docs published; TechDocs is phase 3
  *   permission (+allow-all)   `permission.enabled` is set false in
  *                             app-config.production.yaml, so the frontend
  *                             short-circuits its checks and never calls
@@ -73,5 +72,14 @@ backend.add(import('@backstage/plugin-catalog-backend-module-github'));
 // Derives <host>/project-slug from each entity's location instead of every repo
 // hand-writing it. See the module for why it is registered rather than default.
 backend.add(catalogModuleScmSlugAnnotator);
+
+// Phase 3. Renders whatever a component's backstage.io/techdocs-ref points at;
+// with no annotation on an entity it just has no Docs tab, so this is safe to
+// turn on ahead of any repo actually publishing docs. Needs a `techdocs:`
+// block in config -- see app-config.yaml -- and, before this reaches prod,
+// an external publisher in app-config.production.yaml: the default local
+// storage lives on the pod's filesystem, so it does not survive a restart or
+// exist on any other replica.
+backend.add(import('@backstage/plugin-techdocs-backend'));
 
 backend.start();
