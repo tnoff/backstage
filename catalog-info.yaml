@@ -59,8 +59,10 @@ metadata:
   # `gitlab.com/project-slug` left in the project spec after the GitHub
   # migration is the failure that motivated this.
   #
-  # No backstage.io/techdocs-ref either: the techdocs backend is not installed,
-  # so the annotation would advertise a Docs tab that cannot render.
+  # No backstage.io/techdocs-ref either: the techdocs backend is installed
+  # (phase 3, see packages/backend/src/index.ts) but this repo has no
+  # mkdocs.yml or docs/ of its own yet -- add the annotation in the same
+  # change that adds those.
 spec:
   type: website
   # The portal's only stateful dependency. POSTGRES_HOST on the Deployment is
