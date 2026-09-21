@@ -3,7 +3,8 @@ import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import techdocsPlugin from '@backstage/plugin-techdocs/alpha';
 import { navModule } from './modules/nav';
 import { homeModule } from './modules/home';
+import { authModule } from './modules/auth';
 
 export default createApp({
-  features: [catalogPlugin, techdocsPlugin, navModule, homeModule],
+  features: [catalogPlugin, techdocsPlugin, navModule, homeModule, authModule],
 });

@@ -167,29 +167,23 @@ techdocs:
 
 # No `mcpActions:` block. That plugin was removed in the catalog-only trim,
 # and its config went stale in place -- `backstage-cli config:check --strict`
-# flagged it as an orphaned key once a strict run was finally done. Same
-# class as the `auth:` block removed alongside the auth plugins: configuration
-# for code that is not installed.
+# flagged it as an orphaned key once a strict run was finally done.
+# Configuration for code that is not installed goes stale silently, which is
+# why the `auth:` block below only reappeared once the auth plugins did.
 
-# No `auth:` block, and no auth plugins in the backend.
+# Guest-only auth, restored solely because TechDocs needs SOME identity to
+# mint its viewer cookie from (see packages/backend/src/index.ts) -- this is
+# not a real authorization boundary. Access control is still the bastion:
+# the only route to the pod is a port-forward authenticated by an OCI
+# identity and an SSH key. See docs projects/service-catalog.md.
 #
-# The scaffold shipped `providers: {guest: {}}` here. It was never reachable:
-# this app uses the DECLARATIVE frontend (@backstage/frontend-defaults) and
-# installs no SignInPage extension, so prepareSpecializedApp leaves
-# requiresSignIn false and clears the identity handlers -- the UI renders
-# without ever asking anyone to sign in. The guest provider would also have
-# thrown if it HAD been called: it refuses to run unless NODE_ENV is
-# 'development' or `dangerouslyAllowOutsideDevelopment` is set, and the
-# Dockerfile sets NODE_ENV=production.
-#
-# So this was configuration for a code path that could not execute. Access
-# control is the bastion: the only route to the pod is a port-forward
-# authenticated by an OCI identity and an SSH key. See docs
-# projects/service-catalog.md.
-#
-# Restoring sign-in is TWO changes, not one: a provider module + config here,
-# AND a SignInPage extension in packages/app. Adding only the first reproduces
-# exactly the dead configuration this replaced.
+# dangerouslyAllowOutsideDevelopment is required here (not just in dev) since
+# the Dockerfile sets NODE_ENV=production and the guest provider otherwise
+# refuses to sign anyone in outside a dev environment.
+auth:
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
