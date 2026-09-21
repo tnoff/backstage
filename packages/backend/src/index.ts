@@ -19,7 +19,6 @@
  *                             app-config.production.yaml, so the frontend
  *                             short-circuits its checks and never calls
  *                             /api/permission
- *   auth (+guest provider)    nothing ever called them -- see below
  *   search (+pg, +catalog,    still nothing worth indexing at this size; revisit
  *     +techdocs)               once discovery has pulled in the whole fleet
  *   kubernetes                phase 2 at the earliest, and it needs a cluster
@@ -31,22 +30,25 @@
  * Each is one line to restore, and the removals are deliberately grouped so
  * putting one back does not require re-deriving what it depended on.
  *
- * On auth specifically, because "it was configured" made it look alive:
- * packages/app uses the DECLARATIVE frontend and installs no SignInPage
- * extension. prepareSpecializedApp therefore leaves requiresSignIn false and
- * clears the identity handlers, so the UI never initiates a sign-in and
- * nothing ever reached /api/auth. The guest provider logged "Configuring auth
- * provider: guest" at startup and would then have THROWN if called -- it
- * refuses to run unless NODE_ENV is 'development' or
- * `dangerouslyAllowOutsideDevelopment` is set, and the Dockerfile sets
- * NODE_ENV=production. Configured, initialised, and unreachable.
+ * Auth (+guest provider) is back, for one reason only: TechDocs' static doc
+ * viewer mints a browser cookie from the caller's credentials before it will
+ * serve iframed HTML
+ * (GET /api/techdocs/.backstage/auth/v1/cookie), and that minting endpoint
+ * refuses to run for an anonymous caller -- `dangerouslyDisableDefaultAuthPolicy`
+ * lets requests through without credentials, it does not manufacture an
+ * identity to sign a cookie with. Every other plugin here is fine with
+ * anonymous, so this was previously left out entirely (see git history for
+ * that reasoning) -- restoring it took both halves this time: this module
+ * AND the SignInPage extension in packages/app/src/modules/auth, since the
+ * first alone reproduces the exact dead-wiring bug that was here before.
  *
- * Access control is the bastion, not the app: the only route in is a
- * port-forward authenticated by an OCI identity and an SSH key.
- *
- * Restoring sign-in takes TWO changes -- a provider module and config here,
- * AND a SignInPage extension in packages/app. Doing only the first rebuilds
- * exactly the dead wiring this removed.
+ * Access control is still the bastion, not the app: the only route in is a
+ * port-forward authenticated by an OCI identity and an SSH key. Guest auth
+ * hands out a shared `user:development/guest` identity to anyone who is
+ * already on that route -- it exists so TechDocs has *an* identity to work
+ * with, not to gate who gets one. `dangerouslyAllowOutsideDevelopment: true`
+ * is required in app-config.yaml because the Dockerfile sets
+ * NODE_ENV=production and the guest provider otherwise refuses to run there.
  */
 
 import { createBackend } from '@backstage/backend-defaults';
@@ -57,6 +59,10 @@ const backend = createBackend();
 
 // Serves the compiled frontend bundle. Without it there is no UI at all.
 backend.add(import('@backstage/plugin-app-backend'));
+
+// Guest-only sign-in -- see the comment above for why this exists at all.
+backend.add(import('@backstage/plugin-auth-backend'));
+backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 
 // The point of the exercise.
 backend.add(import('@backstage/plugin-catalog-backend'));
