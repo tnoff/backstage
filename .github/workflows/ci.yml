@@ -158,6 +158,20 @@ jobs:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
 
+  # GitHub's semantic SAST (dataflow/taint analysis), first landing in this
+  # repo -- the one place in the fleet with zero SAST of any kind, since
+  # every Python repo already has bandit via tox. Deliberately advisory only
+  # (not in result's needs): there is no baseline yet, and a first run can
+  # surface real findings worth triaging before this can gate merge, same
+  # rollout shape as Checkov's landing in terraform-modules.
+  codeql:
+    name: CodeQL
+    needs: metadata
+    if: needs.metadata.outputs.only != 'true'
+    uses: tnoff/github-workflows/.github/workflows/codeql.yml@7d6ac98382ec555ef3520ae1c2f07183c35e5127
+    with:
+      languages: '["javascript-typescript"]'
+
   # Catches a `uses:` whose inputs or secrets no longer match the pinned callee.
   # That mismatch fails the calling workflow at STARTUP -- no job is created, no
   # check reports, and no `workflow_run` event fires -- so neither this checks
