@@ -158,12 +158,11 @@ jobs:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
 
-  # GitHub's semantic SAST (dataflow/taint analysis), first landing in this
-  # repo -- the one place in the fleet with zero SAST of any kind, since
-  # every Python repo already has bandit via tox. Deliberately advisory only
-  # (not in result's needs): there is no baseline yet, and a first run can
-  # surface real findings worth triaging before this can gate merge, same
-  # rollout shape as Checkov's landing in terraform-modules.
+  # GitHub's semantic SAST (dataflow/taint analysis) -- the one place in the
+  # fleet with zero SAST of any kind, since every Python repo already has
+  # bandit via tox. First run came back with 0 findings, so promoted straight
+  # into result's needs -- there was never a baseline of pre-existing debt to
+  # triage around here.
   codeql:
     name: CodeQL
     needs: metadata
@@ -202,7 +201,7 @@ jobs:
     # This job always runs and its name never changes, so the ruleset requires
     # exactly one context and the jobs underneath stay free to change.
     if: always()
-    needs: [secrets, changes, build, contracts, metadata]
+    needs: [secrets, changes, build, contracts, metadata, codeql]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -214,6 +213,7 @@ jobs:
           echo "changes:   ${{ needs.changes.result }}"
           echo "build:     ${{ needs.build.result }}"
           echo "contracts: ${{ needs.contracts.result }}"
+          echo "codeql:    ${{ needs.codeql.result }}"
 
       - name: Fail if any job failed
         # `skipped` is deliberately allowed: with allow_fork_prs false a fork
@@ -223,7 +223,8 @@ jobs:
           needs.changes.result == 'failure' || needs.changes.result == 'cancelled' ||
           needs.build.result == 'failure' || needs.build.result == 'cancelled' ||
           needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled' ||
-          needs.metadata.result == 'failure' || needs.metadata.result == 'cancelled'
+          needs.metadata.result == 'failure' || needs.metadata.result == 'cancelled' ||
+          needs.codeql.result == 'failure' || needs.codeql.result == 'cancelled'
         run: |
           echo "::error::One or more CI jobs did not pass."
           exit 1
