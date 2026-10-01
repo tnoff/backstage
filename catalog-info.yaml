@@ -57,6 +57,8 @@ spec:
   # Was absent, which left the portal outside the very System its own backup and
   # bucket claimed membership of.
   system: backstage
+  consumesApis:
+    - api:default/image-bump
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Group
