@@ -175,7 +175,7 @@ techdocs:
 # mint its viewer cookie from (see packages/backend/src/index.ts) -- this is
 # not a real authorization boundary. Access control is still the bastion:
 # the only route to the pod is a port-forward authenticated by an OCI
-# identity and an SSH key. See docs projects/service-catalog.md.
+# identity and an SSH key.
 #
 # dangerouslyAllowOutsideDevelopment is required here (not just in dev) since
 # the Dockerfile sets NODE_ENV=production and the guest provider otherwise
