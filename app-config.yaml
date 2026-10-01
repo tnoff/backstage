@@ -197,8 +197,13 @@ catalog:
   # the admin Group. Without Group here that entity is rejected one location at
   # a time, the catalog comes up with every Component owned by a ref that
   # resolves to nothing, and the only sign is a line in the logs.
+  #
+  # Domain is the same story: docker-apps declares the `platform` and `apps`
+  # Domains that group the Systems. Without it each is rejected with
+  # NotAllowedError ("is not of an allowed kind for that location") and every
+  # System's `spec.domain` points at nothing.
   rules:
-    - allow: [Component, System, API, Resource, Location, Group]
+    - allow: [Component, System, API, Resource, Location, Group, Domain]
   # No `locations:`. The scaffold's three example file locations are deleted, not
   # overridden.
   #
