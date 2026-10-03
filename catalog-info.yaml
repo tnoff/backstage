@@ -44,11 +44,8 @@ metadata:
   # change that adds those.
 spec:
   type: website
-  # The portal's only stateful dependency. POSTGRES_HOST on the Deployment is
-  # backstage-pg.backstage-postgres.svc.cluster.local, so this edge is read off
-  # the running pod rather than inferred from the manifests.
-  dependsOn:
-    - resource:default/backstage-postgres
+  # No datastore dependency: since 2026-10-02 the backend runs on in-memory SQLite and
+  # rebuilds the catalog from GitHub on start (it was Postgres, backstage-pg).
   # Was `john@example.com` from create-app. A Group rather than a User so the
   # field keeps meaning if a second person ever appears -- and so it does not
   # depend on an identity provider that does not exist.
