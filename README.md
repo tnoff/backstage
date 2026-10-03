@@ -9,7 +9,7 @@ that touch it live:
 
 | Concern | Where |
 |---|---|
-| Deployment, production config (`app-config.production.yaml`), database, backups, TechDocs GC | `tnoff/docker-apps` (`apps/backstage/`, `postgresql/backstage/`) |
+| Deployment, production config (`app-config.production.yaml`), TechDocs GC | `tnoff/docker-apps` (`apps/backstage/`) |
 | Operations and architecture docs for the portal | `tnoff/docker-apps` `techdocs/backstage/` |
 | The `backstage` System, and Resources with no code repo | `tnoff/docker-apps` `catalog-info.yaml` |
 | Bucket Resources | `tnoff/terraform` |
