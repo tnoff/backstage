@@ -138,8 +138,12 @@ jobs:
   # a required check that skips blocks the merge.
   build:
     name: Build and scan image
-    needs: changes
-    if: needs.changes.outputs.image == 'true'
+    # `always()` so a skipped `lockfile` (non-Renovate PR) does not skip this.
+    needs: [changes, lockfile]
+    if: >-
+      always() &&
+      needs.changes.outputs.image == 'true' &&
+      needs.lockfile.result != 'failure' && needs.lockfile.result != 'cancelled'
     uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # docker-build-check-v1.0.0
 
   bump-version:
@@ -157,6 +161,69 @@ jobs:
     secrets:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  # Renovate regenerates yarn.lock itself, but when its `yarn install` fails it
+  # logs an artifactError and opens the PR anyway with package.json bumped and
+  # the lockfile stale. The image build then dies on `yarn install --immutable`
+  # (YN0028) with no hint that Renovate was the one that failed (#39).
+  #
+  # So re-resolve here, on every Renovate PR. If the lockfile moves, push it
+  # with the App token (a GITHUB_TOKEN push would not retrigger CI) and fail
+  # this run: the push starts a fresh run, which cancels this one via the
+  # concurrency group, and the stale run must not report green meanwhile. If
+  # resolution itself fails the job fails with yarn's own error, which is the
+  # honest signal for an update yarn cannot resolve.
+  #
+  # Runs after bump-version so both pushes to the head branch are serialised.
+  # Same-repo branches only; a fork PR has no push access to its head.
+  lockfile:
+    name: Refresh yarn.lock
+    needs: [metadata, bump-version]
+    if: >-
+      always() &&
+      needs.metadata.outputs.only != 'true' &&
+      needs.bump-version.result != 'cancelled' &&
+      startsWith(github.head_ref, 'renovate/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - name: Mint App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        with:
+          client-id: ${{ secrets.CI_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+      # Head branch, not the merge ref: bump-version may have pushed since the
+      # event fired, and the commit made here has to sit on top of it.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      # The checked-in release, not corepack: it is what the image build runs.
+      - name: Re-resolve yarn.lock
+        run: node .yarn/releases/yarn-4.13.0.cjs install --mode=update-lockfile
+
+      - name: Push lockfile if it moved
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- yarn.lock; then
+            echo "yarn.lock already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add yarn.lock
+          git commit -m "chore: refresh yarn.lock"
+          git push origin "HEAD:refs/heads/${HEAD_REF}"
+          echo "::error::yarn.lock was stale; pushed a refresh. A new run follows."
+          exit 1
 
   # GitHub's semantic SAST (dataflow/taint analysis) -- the one place in the
   # fleet with zero SAST of any kind, since every Python repo already has
@@ -201,7 +268,7 @@ jobs:
     # This job always runs and its name never changes, so the ruleset requires
     # exactly one context and the jobs underneath stay free to change.
     if: always()
-    needs: [secrets, changes, build, contracts, metadata, codeql]
+    needs: [secrets, changes, lockfile, build, contracts, metadata, codeql]
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -211,6 +278,7 @@ jobs:
           echo "secrets:   ${{ needs.secrets.result }}"
           echo "metadata:  ${{ needs.metadata.result }}"
           echo "changes:   ${{ needs.changes.result }}"
+          echo "lockfile:  ${{ needs.lockfile.result }}"
           echo "build:     ${{ needs.build.result }}"
           echo "contracts: ${{ needs.contracts.result }}"
           echo "codeql:    ${{ needs.codeql.result }}"
@@ -221,6 +289,7 @@ jobs:
         if: >-
           needs.secrets.result == 'failure' || needs.secrets.result == 'cancelled' ||
           needs.changes.result == 'failure' || needs.changes.result == 'cancelled' ||
+          needs.lockfile.result == 'failure' || needs.lockfile.result == 'cancelled' ||
           needs.build.result == 'failure' || needs.build.result == 'cancelled' ||
           needs.contracts.result == 'failure' || needs.contracts.result == 'cancelled' ||
           needs.metadata.result == 'failure' || needs.metadata.result == 'cancelled' ||
