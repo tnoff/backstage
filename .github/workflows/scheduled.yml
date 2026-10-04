@@ -1,0 +1,28 @@
+name: Scheduled
+
+# Weekly self-hosted Renovate. Every other repo in the fleet carries this file;
+# backstage never did, so renovate.json was configured but nothing ran it and
+# no dependency or workflow-pin update PR was ever opened here.
+#
+# The cron is not derived from an old GitLab schedule like the rest of the
+# fleet's (this repo never had one). It is just unused by the others:
+# Wednesday 05:31 UTC.
+#
+# Branch cleanup is left out for now: it is documented to start with a dry run,
+# and nothing here has accumulated stale branches yet.
+
+on:
+  schedule:
+    - cron: '31 5 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    name: Renovate
+    uses: tnoff/github-workflows/.github/workflows/renovate.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # renovate-v1.0.0
+    secrets:
+      app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
+      app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
