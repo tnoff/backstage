@@ -74,7 +74,7 @@ jobs:
     name: Scan for secrets
     needs: metadata
     if: needs.metadata.outputs.only != 'true'
-    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # trufflehog-v1.0.0
 
   # Reimplements .image-build-rules' `changes:` block from the deleted
   # .gitlab-ci.yml. Backstage compiles the whole monorepo inside the image, so
@@ -140,7 +140,7 @@ jobs:
     name: Build and scan image
     needs: changes
     if: needs.changes.outputs.image == 'true'
-    uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    uses: tnoff/github-workflows/.github/workflows/docker-build-check.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # docker-build-check-v1.0.0
 
   bump-version:
     name: Bump version
@@ -151,7 +151,7 @@ jobs:
     if: startsWith(github.head_ref, 'renovate/dev-')
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@b5f1653b3f3a9750af00c7bfda9af04fe263c1b1
+    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # bump-version-v1.0.0
     with:
       bump_changelog: true
     secrets:
@@ -170,7 +170,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: tnoff/github-workflows/.github/workflows/codeql.yml@7d6ac98382ec555ef3520ae1c2f07183c35e5127
+    uses: tnoff/github-workflows/.github/workflows/codeql.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # codeql-v1.0.0
     with:
       languages: '["javascript-typescript"]'
 
@@ -183,7 +183,7 @@ jobs:
     name: Workflow contracts
     needs: metadata
     if: needs.metadata.outputs.only != 'true'
-    uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@2740215791774b60db5cb6da23da260de2e6dfd8
+    uses: tnoff/github-workflows/.github/workflows/check-workflow-contracts.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # check-workflow-contracts-v1.0.0
 
   result:
     name: CI result
