@@ -8,8 +8,8 @@ name: Scheduled
 # fleet's (this repo never had one). It is just unused by the others:
 # Wednesday 05:31 UTC.
 #
-# Branch cleanup is left out for now: it is documented to start with a dry run,
-# and nothing here has accumulated stale branches yet.
+# Branch cleanup prunes stale renovate/* and bump/* branches (older than 30
+# days, never an open PR's head, never protected), as in the rest of the fleet.
 
 on:
   schedule:
@@ -26,3 +26,13 @@ jobs:
     secrets:
       app_client_id: ${{ secrets.CI_APP_CLIENT_ID }}
       app_private_key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+  branch-cleanup:
+    name: Branch cleanup
+    permissions:
+      contents: write
+      pull-requests: read
+    uses: tnoff/github-workflows/.github/workflows/branch-cleanup.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # branch-cleanup-v1.0.0
+    with:
+      age_days: 30
+      dry_run: false
