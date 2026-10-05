@@ -48,6 +48,11 @@
     "prettier": "^2.3.2",
     "typescript": "~5.9.0"
   },
+  "dependenciesMeta": {
+    "better-sqlite3": {
+      "built": true
+    }
+  },
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18"
