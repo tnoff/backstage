@@ -133,7 +133,7 @@ jobs:
     if: >-
       ${{ needs.changes.outputs.image == 'true'
           && !startsWith(github.event.head_commit.message, 'docs: assemble changelog') }}
-    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # docker-push-v1.0.0
+    uses: tnoff/github-workflows/.github/workflows/docker-push.yml@a5e07a72bb76a983408e840c3cfcffa27cdbf738  # docker-push-v1.1.0
     # registry / namespace / repo_name are INPUTS, not secrets. GitHub refuses
     # to set a job output containing secret material, so as secrets the `image`
     # output comes back EMPTY. See github-workflows!98.
