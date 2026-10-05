@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 Entries are assembled from `changelog.d/` fragments by CI — do not edit this
 file directly.
+## [0.0.2] - 2026-10-05
+
+### Changed
+
+- chore(deps): update npm dependencies
+
 ## [0.0.1] - 2026-09-05
 
 ### Changed
