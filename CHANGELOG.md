@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 Entries are assembled from `changelog.d/` fragments by CI — do not edit this
 file directly.
+## [0.0.3] - 2026-10-05
+
+### Changed
+
+- fix(deps): update backstage monorepo
+
 ## [0.0.2] - 2026-10-05
 
 ### Changed
