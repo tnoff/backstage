@@ -205,8 +205,13 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       # The checked-in release, not corepack: it is what the image build runs.
+      # Path comes from .yarnrc.yml because a Renovate PR may bump yarn itself.
       - name: Re-resolve yarn.lock
-        run: node .yarn/releases/yarn-4.13.0.cjs install --mode=update-lockfile
+        run: |
+          set -euo pipefail
+          YARN="$(sed -n 's/^yarnPath: *//p' .yarnrc.yml)"
+          test -f "${YARN}"
+          node "${YARN}" install --mode=update-lockfile
 
       - name: Push lockfile if it moved
         env:
