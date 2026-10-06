@@ -53,8 +53,6 @@
 
 import { createBackend } from '@backstage/backend-defaults';
 
-import { catalogModuleScmSlugAnnotator } from './modules/scmSlugAnnotator';
-
 const backend = createBackend();
 
 // Serves the compiled frontend bundle. Without it there is no UI at all.
@@ -76,8 +74,13 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 // here. Configured under catalog.providers.github in app-config.production.yaml.
 backend.add(import('@backstage/plugin-catalog-backend-module-github'));
 // Derives <host>/project-slug from each entity's location instead of every repo
-// hand-writing it. See the module for why it is registered rather than default.
-backend.add(catalogModuleScmSlugAnnotator);
+// hand-writing it, so it cannot go stale and follows a host move with no edit to
+// any descriptor. The processor is not one of the catalog's defaults, and as of
+// @backstage/plugin-catalog-backend 4.0 it is no longer shipped there at all --
+// it lives in this community module, which registers it itself.
+backend.add(
+  import('@backstage-community/plugin-catalog-backend-module-annotate-scm-slug'),
+);
 
 // Phase 3. Renders whatever a component's backstage.io/techdocs-ref points at;
 // with no annotation on an entity it just has no Docs tab, so this is safe to
