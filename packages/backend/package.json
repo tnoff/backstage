@@ -16,6 +16,7 @@
     "build-image": "docker build ../.. -f Dockerfile --tag backstage"
   },
   "dependencies": {
+    "@backstage-community/plugin-catalog-backend-module-annotate-scm-slug": "^0.7.0",
     "@backstage/backend-defaults": "^0.18.0",
     "@backstage/plugin-app-backend": "^0.5.17",
     "@backstage/plugin-auth-backend": "^0.30.1",
@@ -23,7 +24,6 @@
     "@backstage/plugin-catalog-backend": "^3.9.0",
     "@backstage/plugin-catalog-backend-module-github": "^0.14.0",
     "@backstage/plugin-catalog-backend-module-logs": "^0.1.25",
-    "@backstage/plugin-catalog-node": "^2.2.4",
     "@backstage/plugin-techdocs-backend": "^2.0.6",
     "app": "link:../app",
     "better-sqlite3": "^12.0.0",

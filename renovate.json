@@ -4,6 +4,13 @@
   "enabledManagers": ["github-actions", "dockerfile", "npm", "custom.regex"],
   "packageRules": [
     {
+      "description": "Renovate's replacement suggestion (@material-ui/* -> @mui/*) only swaps the package.json entry. The app still imports the v4 API (makeStyles from @material-ui/core, icons from @material-ui/icons) in packages/app/src/modules/nav, and @mui v5 is not a drop-in for it. The PRs (#32, #33) built green only because @backstage/* still pulls @material-ui/* in transitively, so the old imports resolved by accident. Revisit when Backstage itself moves off MUI v4.",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["replacement"],
+      "matchPackageNames": ["@material-ui/core", "@material-ui/icons"],
+      "enabled": false
+    },
+    {
       "description": "Majors that stop Renovate from regenerating yarn.lock, or that @backstage/* pins through its own ranges. Renovate still opens the PR when `yarn install` fails, but with a stale yarn.lock, so the image build dies on `yarn install --immutable` (#39: typescript 7 breaks yarn 4.13's builtin compat patch; react 19, react-router 7/8, jsdom 30 and better-sqlite3 13 contradict @backstage/*'s ranges). These move when the @backstage/* packages move.",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["major"],
