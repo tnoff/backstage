@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 Entries are assembled from `changelog.d/` fragments by CI — do not edit this
 file directly.
+## [0.0.4] - 2026-10-06
+
+### Changed
+
+- Bumped @backstage/plugin-catalog-backend to v4
+
 ## [0.0.3] - 2026-10-05
 
 ### Changed
