@@ -191,7 +191,7 @@ jobs:
     steps:
       - name: Mint App token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1  # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510  # v3.3.0
         with:
           client-id: ${{ secrets.CI_APP_CLIENT_ID }}
           private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
@@ -242,7 +242,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: tnoff/github-workflows/.github/workflows/codeql.yml@db38f6793ec06c0356e8272b05404b9ccd8f1136  # codeql-v1.0.1
+    uses: tnoff/github-workflows/.github/workflows/codeql.yml@e3023462549497ba604ff4742edb43bdb1eba21c  # codeql-v1.0.2
     with:
       languages: '["javascript-typescript"]'
 
