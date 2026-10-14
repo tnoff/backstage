@@ -242,7 +242,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: tnoff/github-workflows/.github/workflows/codeql.yml@db38f6793ec06c0356e8272b05404b9ccd8f1136  # codeql-v1.0.1
+    uses: tnoff/github-workflows/.github/workflows/codeql.yml@e3023462549497ba604ff4742edb43bdb1eba21c  # codeql-v1.0.2
     with:
       languages: '["javascript-typescript"]'
 
