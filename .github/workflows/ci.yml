@@ -74,7 +74,7 @@ jobs:
     name: Scan for secrets
     needs: metadata
     if: needs.metadata.outputs.only != 'true'
-    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@adea087c43d56fd13d5b1abf2d5f2ba3e695784d  # trufflehog-v1.0.0
+    uses: tnoff/github-workflows/.github/workflows/trufflehog.yml@b7790887a768e86127e2b6a29ed06631c947972f  # trufflehog-v1.0.1
 
   # Reimplements .image-build-rules' `changes:` block from the deleted
   # .gitlab-ci.yml. Backstage compiles the whole monorepo inside the image, so
@@ -155,7 +155,7 @@ jobs:
     if: startsWith(github.head_ref, 'renovate/dev-')
     permissions:
       contents: write
-    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@93f9034849dfd1d98ed72629241a503d29842205  # bump-version-v1.1.0
+    uses: tnoff/github-workflows/.github/workflows/bump-version.yml@c804443f159eee3ebaece0dc57174cfc3387f4b3  # bump-version-v1.1.1
     with:
       bump_changelog: true
     secrets:
@@ -242,7 +242,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: tnoff/github-workflows/.github/workflows/codeql.yml@e3023462549497ba604ff4742edb43bdb1eba21c  # codeql-v1.0.2
+    uses: tnoff/github-workflows/.github/workflows/codeql.yml@7eb9a163564f2fc8edb4f1b8c38d47c2a8475884  # codeql-v1.0.3
     with:
       languages: '["javascript-typescript"]'
 
