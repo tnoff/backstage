@@ -27,6 +27,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends python3 g++ build-essential libsqlite3-dev
 
+# node:26 no longer ships a `yarn` command (the node image dropped corepack), so
+# provide one that runs the release vendored in the repo. The path is read from
+# .yarnrc.yml so a Renovate yarn bump keeps working.
+RUN <<'EOT'
+cat > /usr/local/bin/yarn <<'EOS'
+#!/bin/sh
+exec node "/app/$(sed -n 's/^yarnPath: *//p' /app/.yarnrc.yml)" "$@"
+EOS
+chmod +x /usr/local/bin/yarn
+EOT
+
 # Pre-create the yarn state dir as `node`. The cache mount below targets
 # .../berry/cache, and Docker creates the missing parents (.../berry) as root —
 # so yarn, running as `node`, then cannot mkdir its sibling .../berry/index and
@@ -99,6 +110,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -y --no-install-recommends python3 g++ build-essential libsqlite3-dev
+
+# node:26 no longer ships a `yarn` command (the node image dropped corepack), so
+# provide one that runs the release vendored in the repo. The path is read from
+# .yarnrc.yml so a Renovate yarn bump keeps working.
+RUN <<'EOT'
+cat > /usr/local/bin/yarn <<'EOS'
+#!/bin/sh
+exec node "/app/$(sed -n 's/^yarnPath: *//p' /app/.yarnrc.yml)" "$@"
+EOS
+chmod +x /usr/local/bin/yarn
+EOT
 
 # Same ownership fix as the build stage — this stage mounts the same cache.
 RUN mkdir -p /home/node/.yarn/berry/cache && chown -R node:node /home/node/.yarn
