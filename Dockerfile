@@ -11,7 +11,7 @@
 
 # Stage 1 — skeleton: just the package.json files, so the dependency layer
 # only busts when a manifest or the lockfile changes, not on every source edit.
-FROM node:24-trixie-slim AS packages
+FROM node:26-trixie-slim AS packages
 WORKDIR /app
 COPY package.json yarn.lock ./
 COPY .yarn ./.yarn
@@ -21,7 +21,7 @@ COPY plugins plugins
 RUN find packages plugins \! -name "package.json" -mindepth 2 -maxdepth 2 -exec rm -rf {} \+
 
 # Stage 2 — build: install everything and compile.
-FROM node:24-trixie-slim AS build
+FROM node:26-trixie-slim AS build
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
@@ -94,7 +94,7 @@ RUN mkdir -p packages/backend/dist/skeleton packages/backend/dist/bundle && \
 # toolchain, so installing it here is known-sufficient rather than hopeful.
 # Keeping the install in its own stage means the compiler never reaches the
 # shipped image.
-FROM node:24-trixie-slim AS prod-deps
+FROM node:26-trixie-slim AS prod-deps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
@@ -139,7 +139,7 @@ RUN --mount=type=cache,target=/home/node/.yarn/berry/cache,sharing=locked,uid=10
 RUN find node_modules -type d -path '*/ssh2/test' -prune -exec rm -rf {} +
 
 # Stage 4 — runtime: the compiled result, without the compiler.
-FROM node:24-trixie-slim
+FROM node:26-trixie-slim
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
