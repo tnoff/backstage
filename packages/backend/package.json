@@ -16,7 +16,7 @@
     "build-image": "docker build ../.. -f Dockerfile --tag backstage"
   },
   "dependencies": {
-    "@backstage-community/plugin-catalog-backend-module-annotate-scm-slug": "^0.7.0",
+    "@backstage-community/plugin-catalog-backend-module-annotate-scm-slug": "^0.8.0",
     "@backstage/backend-defaults": "^0.18.0",
     "@backstage/plugin-app-backend": "^0.5.17",
     "@backstage/plugin-auth-backend": "^0.30.1",
