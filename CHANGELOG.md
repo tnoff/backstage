@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 Entries are assembled from `changelog.d/` fragments by CI — do not edit this
 file directly.
+## [0.0.12] - 2026-11-04
+
+### Changed
+
+- Bumped @backstage/plugin-techdocs-backend to v2.4.1
+
 ## [0.0.11] - 2026-11-04
 
 ### Changed
