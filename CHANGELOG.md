@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 Entries are assembled from `changelog.d/` fragments by CI — do not edit this
 file directly.
+## [0.0.13] - 2026-11-07
+
+### Changed
+
+- Bumped @backstage-community/plugin-catalog-backend-module-annotate-scm-slug to ^0.8.0
+
 ## [0.0.12] - 2026-11-04
 
 ### Changed
