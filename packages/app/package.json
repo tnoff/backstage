@@ -18,7 +18,7 @@
     "@backstage/core-components": "^0.18.13",
     "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/frontend-defaults": "^0.5.5",
-    "@backstage/frontend-plugin-api": "^0.18.0",
+    "@backstage/frontend-plugin-api": "^1.0.0",
     "@backstage/integration-react": "^1.2.21",
     "@backstage/plugin-api-docs": "^0.14.4",
     "@backstage/plugin-app-module-user-settings": "^0.1.1",
@@ -48,7 +48,7 @@
     "react-router-dom": "^6.30.2"
   },
   "devDependencies": {
-    "@backstage/frontend-test-utils": "^0.6.3",
+    "@backstage/frontend-test-utils": "^1.0.0",
     "@playwright/test": "^1.32.3",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
