@@ -31,9 +31,10 @@
       "enabled": false
     },
     {
-      "description": "Backstage ships ~100 packages in lockstep, and a per-package fan-out over a yarn.lock this size is exactly the shape that has OOMKilled the Renovate job before. One grouped MR instead.",
+      "description": "Backstage ships ~100 packages in lockstep, and a per-package fan-out over a yarn.lock this size is exactly the shape that has OOMKilled the Renovate job before. One grouped MR instead. Majors go in the same MR (separateMajorMinor off): split, #66 (minors) and #67 (frontend-plugin-api 0.18 -> 1.0) each left two copies of frontend-plugin-api in the tree and both failed `yarn tsc` with TS2742. Neither half could pass on its own.",
       "matchPackageNames": ["@backstage/**"],
       "groupName": "backstage monorepo",
+      "separateMajorMinor": false,
       "additionalBranchPrefix": "dev-"
     },
     {
